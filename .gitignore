@@ -1,0 +1,7 @@
+/.idea
+/node_modules
+/dist
+/config
+/src/config/secrets.env
+/src/logs
+# package-lock.json
