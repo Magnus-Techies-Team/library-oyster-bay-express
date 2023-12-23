@@ -7,6 +7,8 @@ import fastify from "fastify";
 import Server from "./server/index";
 import fastifyCorsOptions from "./server/options/fastifyCorsOptions";
 import fastifyCookieOptions from "./server/options/fastifyCookieOptions";
+import fastifyRequestTracerOptions from "./server/options/fastifyRequestTracerOptions";
+import * as rTracer from "cls-rtracer";
 
 const server = new Server(
   fastify({
@@ -24,6 +26,10 @@ server.registerPlugin({
 server.registerPlugin({
   pluginInstance: fastifyCookie,
   options: fastifyCookieOptions,
+});
+server.registerPlugin({
+  pluginInstance: rTracer.fastifyPlugin,
+  options: fastifyRequestTracerOptions,
 });
 server.registerPlugins();
 server.registerControllers([]);

@@ -1,22 +1,36 @@
-export default {
-  routePrefix: "/docs",
-  exposeRoute: true,
-  deepLinking: true,
-  swagger: {
+import { FastifyDynamicSwaggerOptions } from "@fastify/swagger";
+import _CONFIG from "../../config";
+import logger from "../utils/logger";
+export default <FastifyDynamicSwaggerOptions>{
+  mode: "dynamic",
+  openapi: {
     info: {
-      title: "Library-OBE",
-      description: "Documentation for Library-OBE back-end",
-      version: "0.0.1",
+      title: _CONFIG.app.name,
+      description: `Documentation for ${_CONFIG.app.name} back-end`,
+      version: _CONFIG.app.version,
     },
-    host: "localhost",
-    schemes: ["http"],
-    consumes: ["application/json"],
-    produces: ["application/json"],
   },
   refResolver: {
-    buildLocalReference(json, baseUri, fragment, i) {
-      console.log("refResolver: ", json, baseUri, fragment, i);
-      return json.$id || `tap-${i}`;
+    buildLocalReference(
+      /** The `json` that is being resolved. */
+      json: { $id: string },
+      /** The `baseUri` object of the schema. */
+      baseUri: {
+        scheme?: string;
+        userinfo?: string;
+        host?: string;
+        port?: number | string;
+        path?: string;
+        query?: string;
+        fragment?: string;
+        reference?: string;
+        error?: string;
+      },
+      fragment: string,
+      i: number
+    ) {
+      logger.info({ json, baseUri, fragment, i }, "[refResolver Info]: ");
+      return json.$id || `${_CONFIG.app.abbr.toLowerCase()}-${i}`;
     },
   },
 };
