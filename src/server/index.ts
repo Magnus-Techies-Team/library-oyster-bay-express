@@ -1,0 +1,143 @@
+import { bootstrap } from "fastify-decorators";
+import { IncomingMessage, Server as httpServer, ServerResponse } from "http";
+import { plugin, pluginSet, router, routerSet } from "./types";
+import { FastifyInstance, FastifyPluginOptions, RouteOptions } from "fastify";
+import { SchemaObject } from "ajv";
+import fs from "fs";
+
+export default class Server {
+  private setOfRouters: routerSet;
+  private setOfPlugins: pluginSet;
+  private serverInstance: FastifyInstance<
+    httpServer,
+    IncomingMessage,
+    ServerResponse
+  >;
+  private _referencesSchemasList: SchemaObject[] = [];
+
+  constructor(
+    server: FastifyInstance<httpServer, IncomingMessage, ServerResponse>,
+    routerSet?: routerSet,
+    pluginSet?: pluginSet
+  ) {
+    this.setOfRouters = routerSet ?? [];
+    this.setOfPlugins = pluginSet ?? [];
+    this.serverInstance = server;
+  }
+
+  public setEnvVariables(envParamsObject: { [key: string]: any }) {
+    for (let envParamName in envParamsObject) {
+      process.env[envParamName] = envParamsObject[envParamName];
+    }
+  }
+
+  public registerPlugin(plugin: plugin) {
+    this.setOfPlugins.push(plugin);
+  }
+
+  public registerRouter(router: router) {
+    this.setOfRouters.push(router);
+  }
+
+  public registerPlugins() {
+    this.setOfPlugins.forEach((plugin: plugin) => {
+      this.serverInstance.register(plugin.pluginInstance, plugin.options);
+    });
+  }
+
+  private registerRouters() {
+    this.setOfRouters.forEach((router: router) => {
+      let { routes, opts } = router;
+      //routes = generalHook.applyGeneralHookRreSerialization(routes);
+      const plugin = (
+        server: FastifyInstance,
+        opts: FastifyPluginOptions,
+        done: () => unknown
+      ) => {
+        routes.forEach((route: RouteOptions) => {
+          server.route(route);
+        });
+        done();
+      };
+      this.serverInstance.register(plugin, opts);
+    });
+  }
+
+  public addSchema(schema: SchemaObject) {
+    this.serverInstance.addSchema(schema);
+  }
+
+  public addSchemas(schemas: SchemaObject[]) {
+    if (schemas.length)
+      schemas.forEach((schema) => this.serverInstance.addSchema(schema));
+  }
+
+  public getSchemas() {
+    return this.serverInstance.getSchemas();
+  }
+
+  public findReferencesSchemas(
+    modulesDirectory = `${process.cwd()}/dist/src/modules`,
+    schemasDirectory = "schemas",
+    referenceFileName = "reference.js"
+  ) {
+    const referencesSchemas: SchemaObject[] = [];
+    fs.readdirSync(modulesDirectory).map((moduleName) => {
+      /* define paths */
+      const moduleBasePath = [
+        modulesDirectory,
+        moduleName,
+        schemasDirectory,
+      ].join("/");
+      const moduleSchemasPath = [moduleBasePath, referenceFileName].join("/");
+      /* if module has definition schemas(contains $id property)*/
+      if (fs.existsSync(moduleSchemasPath)) {
+        /* import all schemas */
+        const moduleSchemas: {
+          [key: string]: SchemaObject;
+        } = require(moduleSchemasPath);
+        console.log(`Schemas from ${moduleName}: \n`, moduleSchemas);
+        /* filter definition schemas and register them to the server */
+        const findedSchemas: SchemaObject[] = Object.values(
+          moduleSchemas
+        ).filter((schema: SchemaObject) => Object.keys(schema).includes("$id"));
+        referencesSchemas.push(...findedSchemas);
+        return findedSchemas;
+      }
+    });
+    if (referencesSchemas?.length)
+      this._referencesSchemasList = referencesSchemas;
+  }
+
+  public addReferencesSchemas(
+    putOnStartList: string[] = [],
+    ignoreList: string[] = []
+  ) {
+    let toStartList: SchemaObject[] = [];
+    let filteredList: SchemaObject[] = [];
+    /* set to array schemas need to put on start */
+    toStartList = this._referencesSchemasList.filter(
+      (el) => el.$id === putOnStartList.find((childEl) => childEl === el.$id)
+    );
+    /* filter the rest of the schemas, ignoring those that need to be ignored and those that were added to the start */
+    filteredList = this._referencesSchemasList.filter(
+      (el) =>
+        el.$id !== ignoreList.find((childEl) => childEl === el.$id) &&
+        el.$id !== putOnStartList.find((childEl) => childEl === el.$id)
+    );
+    this._referencesSchemasList = [...toStartList, ...filteredList];
+    // console.log("References Schemas List: ", this._referencesSchemasList);
+    const list = this._referencesSchemasList;
+    if (list.length) list.forEach((schema) => this.addSchema(schema));
+  }
+
+  public registerControllers(controllers: any[]) {
+    this.serverInstance.register(bootstrap, {
+      controllers: controllers,
+    });
+  }
+
+  public async initServer(port: number, host: string) {
+    await this.serverInstance.listen({ port, host });
+  }
+}
