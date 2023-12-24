@@ -23,8 +23,8 @@ export default class AxiosInterceptor<T, K> {
       this.instance.interceptors.request.use(
         (config: InternalAxiosRequestConfig<T>) => {
           // Logic before sending request
-          if (!config.headers["x-request-id"]) {
-            config.headers["x-request-id"] = rTracer.id();
+          if (!config.headers["r-request-id"]) {
+            config.headers["r-request-id"] = rTracer.id();
           }
           return config;
         },

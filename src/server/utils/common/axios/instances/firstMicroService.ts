@@ -13,7 +13,7 @@ export default class FirstMicroServiceInstance {
     return this.instance;
   }
 
-  public async graphQLClient(query: string): Promise<AxiosResponse> {
-    return await this.instance.post("/graphql", { query });
+  public async testRoute(query: string): Promise<AxiosResponse> {
+    return await this.instance.post("/test", { query });
   }
 }
