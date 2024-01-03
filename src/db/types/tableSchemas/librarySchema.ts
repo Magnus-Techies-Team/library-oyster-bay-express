@@ -1,5 +1,5 @@
 export type LibrarySchema = {
-  id: string;
+  id: number;
   name: string;
   description: string;
   owner_id: string;

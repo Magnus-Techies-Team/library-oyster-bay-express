@@ -1,5 +1,5 @@
 export type PublicationSchema = {
-  id: string;
+  id: number;
   title: string;
   description: string;
   author_id: string;

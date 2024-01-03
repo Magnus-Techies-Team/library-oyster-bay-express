@@ -4,6 +4,7 @@ import { plugin, pluginSet, router, routerSet } from "./types";
 import { FastifyInstance, FastifyPluginOptions, RouteOptions } from "fastify";
 import { SchemaObject } from "ajv";
 import fs from "fs";
+import { initLocalDatabaseIfNotExists } from "../db/initLocalDatabase";
 
 export default class Server {
   private setOfRouters: routerSet;
@@ -139,5 +140,9 @@ export default class Server {
 
   public async initServer(port: number, host: string) {
     await this.serverInstance.listen({ port, host });
+  }
+
+  public async initLocalDatabase() {
+    await initLocalDatabaseIfNotExists();
   }
 }

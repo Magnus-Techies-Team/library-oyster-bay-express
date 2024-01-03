@@ -1,6 +1,6 @@
 export type RbacSchema = {
-  id: string;
-  title: string;
+  user_id: number;
+  title: number;
   access_level: number;
   created_at: string;
   updated_at: string;
