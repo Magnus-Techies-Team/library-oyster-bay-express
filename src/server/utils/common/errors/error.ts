@@ -29,13 +29,6 @@ export class ForbiddenError extends Error implements BaseError {
   }
 }
 
-export class BadRequest extends Error implements BaseError {
-  readonly info = ErrorsTypes.NotFound;
-  constructor(readonly message: string, readonly module: ModuleName) {
-    super();
-  }
-}
-
 export class NotAllowedError extends Error implements BaseError {
   readonly info = ErrorsTypes.NotAllowed;
   constructor(readonly message: string, readonly module: ModuleName) {
@@ -45,6 +38,13 @@ export class NotAllowedError extends Error implements BaseError {
 
 export class WrongOperationError extends Error implements BaseError {
   readonly info = ErrorsTypes.WrongOperation;
+  constructor(readonly message: string, readonly module: ModuleName) {
+    super();
+  }
+}
+
+export class NotFoundError extends Error implements BaseError {
+  readonly info = ErrorsTypes.NotFound;
   constructor(readonly message: string, readonly module: ModuleName) {
     super();
   }
@@ -84,7 +84,6 @@ export class PostgresError extends Error implements BaseError {
 export type GenericError =
   | BadRequestError
   | ForbiddenError
-  | BadRequest
   | WrongOperationError
   | TooManyRequestsError
   | ServerError;

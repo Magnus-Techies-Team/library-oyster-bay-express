@@ -32,7 +32,14 @@ interface ApplicationConfig {
     generationNumber: number;
   };
   logger: LoggerConfig;
+  security: securityConfig;
 }
+
+interface securityConfig {
+  REFRESH_TOKEN_SECRET: string;
+  ACCESS_TOKEN_SECRET: string;
+}
+
 export interface Config {
   server: ServerConfig;
   db: {

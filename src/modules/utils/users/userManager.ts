@@ -1,8 +1,10 @@
-
-import { ErrorConstraints } from "../../../constraints/errorConstraints";
 import { Inject, Service } from "fastify-decorators";
 import { DB, DBToken } from "../../../db";
 import ServiceClass, { serviceClassToken } from "../common/serviceClass";
+import {
+  BadRequestError,
+  NotFoundError,
+} from "../../../server/utils/common/errors/error";
 
 export const userManagerToken = Symbol("userManagerToken");
 
@@ -24,16 +26,10 @@ export default class UserManager {
         tableName: "users",
         columnObject: userData,
       });
-      if (userCreated.error) {
-        if (userCreated.error.code === "23505") {
-          return { error: ErrorConstraints.EMAIL_OR_USERNAME_ALREADY_EXIST };
-        }
-        return { error: ErrorConstraints.CREATING_USER_ERROR };
-      }
       delete userCreated.rows[0].password;
       return userCreated.rows[0];
     }
-    return { error: ErrorConstraints.INVALID_EMAIL };
+    throw new BadRequestError("Invalid email", "UserManager");
   }
 
   public async login(userData: {
@@ -45,10 +41,8 @@ export default class UserManager {
       searchBy: "login",
       value: userData.login,
     });
-    if (user.error) {
-      return { error: user.error };
-    } else if (userData.password !== user.rows[0].password) {
-      return { error: ErrorConstraints.INVALID_PASSWORD };
+    if (userData.password !== user.rows[0].password) {
+      throw new BadRequestError("Wrong password", "UserManager");
     } else {
       const data = { ...user.rows[0] };
       delete data.password;
@@ -60,7 +54,7 @@ export default class UserManager {
     const query = `select login, email from Users where id='${id}'`;
     const result = await this._DB.executeQuery(query, []);
     if (!result.rows.length) {
-      return { error: 'User not found' };
+      throw new NotFoundError("User not found", "UserManager");
     }
     return result.rows[0];
   }
