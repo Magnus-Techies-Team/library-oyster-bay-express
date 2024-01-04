@@ -34,8 +34,8 @@ server.registerPlugin({
 });
 server.registerPlugin({
   pluginInstance: fastifyMultipart,
-  options: {}
-})
+  options: {},
+});
 server.registerPlugins();
 server.registerControllers([]);
 server.findReferencesSchemas();

@@ -1,8 +1,8 @@
 export enum Tables {
-  role = "role",
-  user = "user",
+  roles = "roles",
+  users = "users",
   rbac = "rbac",
-  library = "library",
-  publication = "publication",
+  libraries = "libraries",
+  publications = "publications",
   publication_tags = "publication_tags",
 }

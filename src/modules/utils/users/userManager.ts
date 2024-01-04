@@ -5,6 +5,7 @@ import {
   BadRequestError,
   NotFoundError,
 } from "../../../server/utils/common/errors/error";
+import { Tables } from "../../../db/types/tables";
 
 export const userManagerToken = Symbol("userManagerToken");
 
@@ -23,7 +24,7 @@ export default class UserManager {
       /^[-!#$%&'*+/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
     if (emailMatcher.exec(userData.email)) {
       const userCreated = await this._serviceClass.createRecord({
-        tableName: "users",
+        tableName: Tables.users,
         columnObject: userData,
       });
       delete userCreated.rows[0].password;
@@ -37,7 +38,7 @@ export default class UserManager {
     password: string;
   }): Promise<any> {
     const user = await this._serviceClass.getRecord({
-      tableName: "users",
+      tableName: Tables.users,
       searchBy: "login",
       value: userData.login,
     });
@@ -51,7 +52,7 @@ export default class UserManager {
   }
 
   public async getUser(id: string): Promise<any> {
-    const query = `select login, email from Users where id='${id}'`;
+    const query = `select login, email from ${Tables.users} where id='${id}'`;
     const result = await this._DB.executeQuery(query, []);
     if (!result.rows.length) {
       throw new NotFoundError("User not found", "UserManager");

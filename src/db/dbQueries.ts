@@ -14,7 +14,7 @@ export const createPublicationTagsQuery = `create table if not exists ${Tables.p
     ${PublicationTagsColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
-export const createPublicationQuery = `create table if not exists ${Tables.publication} (
+export const createPublicationQuery = `create table if not exists ${Tables.publications} (
     ${PublicationColumns.id} serial primary key,
     ${PublicationColumns.title} varchar(255) not null,
     ${PublicationColumns.filepath} varchar(255) not null,
@@ -27,7 +27,7 @@ export const createPublicationQuery = `create table if not exists ${Tables.publi
     ${PublicationColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
-export const createLibraryQuery = `create table if not exists ${Tables.library} (
+export const createLibraryQuery = `create table if not exists ${Tables.libraries} (
     ${LibraryColumns.id} serial primary key,
     ${LibraryColumns.name} varchar(255) not null,
     ${LibraryColumns.owner_id} integer not null,
@@ -41,11 +41,11 @@ export const createRBACQuery = `create table if not exists ${Tables.rbac} (
         ${RBACColumns.user_id} integer not null,
         ${RBACColumns.role_id} integer not null,
         ${RBACColumns.created_at} timestamp not null default current_timestamp,
-        ${RBACColumns.updated_at} timestamp not null default current_timestamp
-        UNIQUE (${RBACColumns.library_id}, ${RBACColumns.user_id}, ${RBACColumns.role_id})
+        ${RBACColumns.updated_at} timestamp not null default current_timestamp,
+        PRIMARY KEY (${RBACColumns.library_id}, ${RBACColumns.user_id}, ${RBACColumns.role_id})
 );`;
 
-export const createRolesQuery = `create table if not exists ${Tables.role} (
+export const createRolesQuery = `create table if not exists ${Tables.roles} (
     ${RoleColumns.id} serial primary key,
     ${RoleColumns.title} varchar(255) not null,
     ${RoleColumns.access_level} integer not null,
@@ -53,7 +53,7 @@ export const createRolesQuery = `create table if not exists ${Tables.role} (
     ${RoleColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
-export const createUsersQuery = `create table if not exists ${Tables.user} (
+export const createUsersQuery = `create table if not exists ${Tables.users} (
     ${UserColumns.id} serial primary key,
     ${UserColumns.first_name} varchar(255) not null,
     ${UserColumns.last_name} varchar(255) not null,

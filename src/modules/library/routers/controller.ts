@@ -5,9 +5,10 @@ import {
   RouteGenericInterfaceGetLibrary,
 } from "../types/reqInterface";
 import { verifyJWTHook } from "../../utils/users/verifyJWTHook";
-import _CONFIG from "../../../config";
-import LibraryManager, { libraryManagerToken } from "../../utils/library/libraryManager";
-import { authorizeUserHook } from "../../utils/RBAC/asyncStorage/enforcementHook";
+import LibraryManager, {
+  libraryManagerToken,
+} from "../../utils/library/libraryManager";
+import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
 
 @Controller("/library")
 export class UserController {
@@ -31,5 +32,4 @@ export class UserController {
     const library = await this._libraryManagerService.getLibrary(req.query.id);
     return rep.status(200).send(library);
   }
-
 }
