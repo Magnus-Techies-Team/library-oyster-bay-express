@@ -22,9 +22,6 @@ export class UserController {
     rep: FastifyReply
   ): Promise<FastifyReply> {
     const user = await this._userManagerService.createUser(req.body);
-    if (user.error) {
-      return rep.status(400).send(user.error);
-    }
     return rep.status(200).send(user);
   }
 
