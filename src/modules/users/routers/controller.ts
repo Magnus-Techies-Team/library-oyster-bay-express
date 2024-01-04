@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { sign } from "jsonwebtoken";
 import { Controller, GET, Inject, POST } from "fastify-decorators";
 import UserManager, { userManagerToken } from "../../utils/users/userManager";
-import { ErrorConstraints } from "../../../constraints/errorConstraints";
 import {
   RouteGenericInterfaceCreateUser,
   RouteGenericInterfaceLogin,
@@ -10,6 +9,7 @@ import {
 import { hashPassword } from "../../utils/users/hashPassword";
 import { verifyJWTHook } from "../../utils/users/verifyJWTHook";
 import _CONFIG from "../../../config";
+import { UnauthorizedError } from "../../../server/utils/common/errors/error";
 
 @Controller("/users")
 export class UserController {
@@ -31,9 +31,6 @@ export class UserController {
     rep: FastifyReply
   ): Promise<FastifyReply> {
     const user = await this._userManagerService.login(req.body);
-    if (user.error) {
-      return rep.status(400).send(user.error);
-    }
     const jwt = sign(user, <string>_CONFIG.app.security.REFRESH_TOKEN_SECRET, {
       expiresIn: 21600,
     });
@@ -84,12 +81,9 @@ export class UserController {
   ): Promise<FastifyReply> {
     const uuid = req.cookies.uuid;
     if (!uuid) {
-      return rep.status(401).send(ErrorConstraints.UNAUTHORIZED_ERROR);
+      throw new UnauthorizedError("User is not authorized", "UserController");
     }
     const userData = await this._userManagerService.getUser(uuid);
-    if (userData.error) {
-      return rep.status(401).send(ErrorConstraints.INVALID_USER_ID);
-    }
     return rep.status(200).send(userData);
   }
 }

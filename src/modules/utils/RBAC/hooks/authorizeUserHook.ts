@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { AsyncResource } from "async_hooks";
-import AsyncStorageMap from "./index";
-import { resolvePromise } from "./resolvePromise";
+import AsyncStorageMap from "../asyncStorage";
+import { resolvePromise } from "../asyncStorage/resolvePromise";
 import logger from "../../../../server/utils/logger";
-import { AuthorizationHookResponse } from "./types";
+import { AuthorizationHookResponse } from "../asyncStorage/types";
 
 export const authorizeUserHook = (
   req: FastifyRequest,
