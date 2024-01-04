@@ -1,4 +1,4 @@
-export type LibrarySchema = {
+export type LibrariesSchema = {
   id: number;
   name: string;
   description: string;

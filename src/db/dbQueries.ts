@@ -1,10 +1,11 @@
 import { Tables } from "./types/tables";
-import { PublicationColumns } from "./types/tableColumns/publication";
+import { PublicationColumns } from "./types/tableColumns/publications";
 import { PublicationTagsColumns } from "./types/tableColumns/publicationTags";
-import { LibraryColumns } from "./types/tableColumns/library";
+import { LibraryColumns } from "./types/tableColumns/libraries";
 import { RBACColumns } from "./types/tableColumns/rbac";
-import { RoleColumns } from "./types/tableColumns/role";
-import { UserColumns } from "./types/tableColumns/user";
+import { RoleColumns } from "./types/tableColumns/roles";
+import { UserColumns } from "./types/tableColumns/users";
+import { PerUserOrganizationFileLimitsColumns } from "./types/tableColumns/perUserOrganizationFileLimits";
 
 export const createPublicationTagsQuery = `create table if not exists ${Tables.publication_tags} (
     ${PublicationTagsColumns.id} serial primary key,
@@ -61,4 +62,27 @@ export const createUsersQuery = `create table if not exists ${Tables.users} (
     ${UserColumns.password} varchar(255) not null,
     ${UserColumns.created_at} timestamp not null default current_timestamp,
     ${UserColumns.updated_at} timestamp not null default current_timestamp
+);`;
+
+export const createSubscriptionsQuery = `
+CREATE TABLE IF NOT EXISTS ${Tables.subscriptions} (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    organization_limit INTEGER NOT NULL,
+    file_size_limit_mbytes INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);`;
+
+export const createPerUserOrganizationFileLimitsQuery = `
+CREATE TABLE IF NOT EXISTS ${Tables.per_user_organization_file_limits} (
+    ${PerUserOrganizationFileLimitsColumns.id} SERIAL PRIMARY KEY,
+    ${PerUserOrganizationFileLimitsColumns.user_id} INTEGER NOT NULL,
+    ${PerUserOrganizationFileLimitsColumns.organization_id} INTEGER NOT NULL,
+    ${PerUserOrganizationFileLimitsColumns.file_size_limit} INTEGER NOT NULL,
+    ${PerUserOrganizationFileLimitsColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ${PerUserOrganizationFileLimitsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.user_id}) REFERENCES ${Tables.users}(${UserColumns.id}),
+    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.organization_id}) REFERENCES ${Tables.libraries}(${LibraryColumns.id})
 );`;

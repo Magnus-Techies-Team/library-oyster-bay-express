@@ -3,7 +3,7 @@ import { DB, DBToken } from "../../../../db";
 import { RbacSchema } from "../../../../db/types/tableSchemas/rbacSchema";
 import { getAccessLevel } from "./dbQueries";
 import { QueryResult } from "pg";
-import { RoleSchema } from "../../../../db/types/tableSchemas/roleSchema";
+import { RolesSchema } from "../../../../db/types/tableSchemas/rolesSchema";
 
 export const accessManagerToken = Symbol("accessManagerToken");
 
@@ -15,7 +15,7 @@ export default class AccessManager {
   public async getAccessLevel(
     userId: number,
     organizationId: number
-  ): Promise<QueryResult<RbacSchema & RoleSchema>> {
+  ): Promise<QueryResult<RbacSchema & RolesSchema>> {
     return await this._DB.executeQuery(
       getAccessLevel(userId, organizationId),
       []

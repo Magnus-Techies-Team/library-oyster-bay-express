@@ -2,7 +2,7 @@ import { Inject, Service } from "fastify-decorators";
 import ServiceClass, { serviceClassToken } from "../common/serviceClass";
 import { BadRequestError } from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
-import { PublicationColumns } from "../../../db/types/tableColumns/publication";
+import { PublicationColumns } from "../../../db/types/tableColumns/publications";
 import {
   ArticleStorageManager,
   articleStorageManagerToken,

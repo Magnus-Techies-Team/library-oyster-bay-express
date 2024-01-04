@@ -1,6 +1,6 @@
 import { AccessLevel } from "../customTypes";
 
-export type RoleSchema = {
+export type RolesSchema = {
   id: string;
   title: string;
   access_level: AccessLevel;

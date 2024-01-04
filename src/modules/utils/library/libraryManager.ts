@@ -2,7 +2,7 @@ import { Inject, Service } from "fastify-decorators";
 import ServiceClass, { serviceClassToken } from "../common/serviceClass";
 import { BadRequestError } from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
-import { LibraryColumns } from "../../../db/types/tableColumns/library";
+import { LibraryColumns } from "../../../db/types/tableColumns/libraries";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 

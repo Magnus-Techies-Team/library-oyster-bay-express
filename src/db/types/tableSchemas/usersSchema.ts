@@ -1,4 +1,4 @@
-export type UserSchema = {
+export type UsersSchema = {
   id: string;
   username: string;
   email: string;

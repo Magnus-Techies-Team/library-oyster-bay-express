@@ -1,4 +1,4 @@
-export type PublicationSchema = {
+export type PublicationsSchema = {
   id: number;
   title: string;
   description: string;
