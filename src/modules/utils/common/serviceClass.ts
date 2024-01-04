@@ -3,6 +3,7 @@ import { DB, DBToken } from "../../../db";
 import { Inject, Service } from "fastify-decorators";
 import { createRecordType, readRecordType, updateRecordType, deleteRecordType } from "../../../types/crudTypes";
 import { constructCreateQueryStringBasedOnParams, constructGetQueryStringBasedOnParams, constructUpdateQueryStringBasedOnParams, constructDeleteQueryStringBasedOnParams } from "./crudHelpers";
+import { QueryResult } from "pg";
 
 export const serviceClassToken = Symbol("serviceClassToken");
 
@@ -11,7 +12,7 @@ export default class ServiceClass {
   @Inject(DBToken)
   private _DB!: DB;
 
-  async createRecord(data: createRecordType): Promise<any> {
+  async createRecord(data: createRecordType): Promise<QueryResult> {
     const { queryString, valuesArray } =
       constructCreateQueryStringBasedOnParams(data);
     return await this._DB.executeQuery(

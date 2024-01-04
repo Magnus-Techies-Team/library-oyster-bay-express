@@ -9,6 +9,7 @@ import fastifyCorsOptions from "./server/options/fastifyCorsOptions";
 import fastifyCookieOptions from "./server/options/fastifyCookieOptions";
 import fastifyRequestTracerOptions from "./server/options/fastifyRequestTracerOptions";
 import * as rTracer from "cls-rtracer";
+import fastifyMultipart from "@fastify/multipart";
 
 const server = new Server(
   fastify({
@@ -31,6 +32,10 @@ server.registerPlugin({
   pluginInstance: rTracer.fastifyPlugin,
   options: fastifyRequestTracerOptions,
 });
+server.registerPlugin({
+  pluginInstance: fastifyMultipart,
+  options: {}
+})
 server.registerPlugins();
 server.registerControllers([]);
 server.findReferencesSchemas();
