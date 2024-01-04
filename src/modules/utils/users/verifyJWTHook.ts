@@ -1,6 +1,6 @@
 import { verify, sign } from "jsonwebtoken";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { ErrorConstraints } from "../../../constraints/errorConstraints";
+import { UnauthorizedError } from "../../../server/utils/common/errors/error";
 
 export const verifyJWTHook = async (
   req: FastifyRequest,
@@ -9,15 +9,14 @@ export const verifyJWTHook = async (
   const refresh = req.cookies["ref"];
   const access = req.cookies["acc"];
   if (!refresh) {
-    return rep.status(401).send(ErrorConstraints.NO_AUTH_TOKEN);
+    throw new UnauthorizedError("No refresh token", "verifyJWTHook");
   }
   verify(
     refresh,
     <string>process.env.REFRESH_TOKEN_SECRET,
     (error, refreshDecoded: any) => {
       if (error) {
-        console.log(error);
-        return rep.status(401).send(ErrorConstraints.TOKEN_EXPIRED);
+        throw new UnauthorizedError("Token expired", "verifyJWTHook");
       }
       verify(
         access,
