@@ -69,7 +69,6 @@ export const createUsersQuery = `create table if not exists ${Tables.users} (
 export const createSubscriptionsQuery = `
 CREATE TABLE IF NOT EXISTS ${Tables.subscriptions} (
     id SERIAL PRIMARY KEY,
-    ${SubscriptionsColumns.user_id} INTEGER NOT NULL,
     ${SubscriptionsColumns.organization_limit_number} INTEGER NOT NULL,
     ${SubscriptionsColumns.price} INTEGER NOT NULL,
     ${SubscriptionsColumns.file_size_limit_number} INTEGER NOT NULL,

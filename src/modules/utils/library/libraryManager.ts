@@ -3,6 +3,10 @@ import ServiceClass, { serviceClassToken } from "../common/serviceClass";
 import { BadRequestError } from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
 import { LibraryColumns } from "../../../db/types/tableColumns/libraries";
+import { LibrariesSchema } from "../../../db/types/tableSchemas/librariesSchema";
+import fs from "fs";
+import { RBACEnforce } from "../RBAC/hooks/rbacEnforcementHook";
+import { AccessLevel } from "../../../db/types/customTypes";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 
@@ -11,18 +15,21 @@ export default class LibraryManager {
   @Inject(serviceClassToken)
   private _serviceClass!: ServiceClass;
 
+  @RBACEnforce(AccessLevel.OWNER)
   public async createLibrary(libraryData: {
     name: string;
     description: string;
     owner_id: number;
-  }): Promise<any> {
+  }): Promise<LibrariesSchema> {
     const library = await this._serviceClass.createRecord({
       tableName: Tables.libraries,
       columnObject: libraryData,
     });
+    this.createLibraryFolder(library.rows[0].id);
     return library.rows[0];
   }
 
+  @RBACEnforce(AccessLevel.USER)
   public async getLibrary(id: number) {
     const library = await this._serviceClass.getRecord({
       tableName: Tables.libraries,
@@ -36,5 +43,27 @@ export default class LibraryManager {
       );
     }
     return library.rows[0];
+  }
+
+  private createLibraryFolder(libraryId: number): void {
+    const baseDir = `./publications/${libraryId}`;
+    const commonDir = `${baseDir}/common`;
+    const authorsDir = `${baseDir}/authors`;
+
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(commonDir)) {
+      fs.mkdirSync(commonDir);
+    }
+
+    if (!fs.existsSync(authorsDir)) {
+      fs.mkdirSync(authorsDir);
+    }
+  }
+
+  private deleteLibraryFolder(libraryId: number): void {
+    fs.rmdirSync(`./publications/${libraryId}`);
   }
 }

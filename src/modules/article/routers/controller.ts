@@ -1,12 +1,17 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Controller, GET, Inject, POST } from "fastify-decorators";
-import { RouteGenericInterfaceGetLibrary } from "../types/reqInterface";
+import {
+  RouteGenericInterfaceCreateLibrary,
+  RouteGenericInterfaceGetLibrary,
+} from "../types/reqInterface";
 import { verifyJWTHook } from "../../utils/users/verifyJWTHook";
 import ArticleManager, {
   articleManagerToken,
 } from "../../utils/article/articleManager";
 import { _CONTENT_TYPE } from "../../utils/article/formatContentTypes";
 import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
+import { RBACEnforce } from "../../utils/RBAC/hooks/rbacEnforcementHook";
+import { AccessLevel } from "../../../db/types/customTypes";
 
 @Controller("/article")
 export class ArticleController {
@@ -14,12 +19,24 @@ export class ArticleController {
   private _articleManagerService!: ArticleManager;
 
   @POST("/", { preValidation: authorizeUserHook })
-  public async createLibrary(
-    req: FastifyRequest,
+  public async createArticle(
+    req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
     const library = await this._articleManagerService.createArticle(
-      <any>req.body,
+      req.body,
+      await req.file()
+    );
+    return rep.status(200).send(library);
+  }
+
+  @POST("/publish", { preValidation: authorizeUserHook })
+  public async publishArticle(
+    req: FastifyRequest<any>,
+    rep: FastifyReply
+  ): Promise<FastifyReply> {
+    const library = await this._articleManagerService.createArticle(
+      req.body,
       await req.file()
     );
     return rep.status(200).send(library);
@@ -45,6 +62,7 @@ export class ArticleController {
     return rep.status(200).send(articles);
   }
 
+  @RBACEnforce(AccessLevel.USER)
   @GET("/download/:id", { preValidation: verifyJWTHook })
   public async downloadArticle(
     req: FastifyRequest<RouteGenericInterfaceGetLibrary>,

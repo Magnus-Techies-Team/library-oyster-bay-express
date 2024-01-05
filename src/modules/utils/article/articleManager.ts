@@ -7,6 +7,7 @@ import {
   ArticleStorageManager,
   articleStorageManagerToken,
 } from "./articleStorage";
+import { PublicationsSchema } from "../../../db/types/tableSchemas/publicationsSchema";
 
 export const articleManagerToken = Symbol("articleManagerToken");
 
@@ -18,16 +19,9 @@ export default class ArticleManager {
   private _articleStorageManager!: ArticleStorageManager;
 
   public async createArticle(
-    articleData: {
-      title: PublicationColumns.title;
-      user_id: PublicationColumns.user_id;
-      price: PublicationColumns.price;
-      is_public: PublicationColumns.is_public;
-      year: PublicationColumns.year;
-      library_id: PublicationColumns.library_id;
-    },
+    articleData: any,
     content: any
-  ): Promise<any> {
+  ): Promise<PublicationsSchema> {
     const filepath = `./publications/${articleData.library_id}/${articleData.title}`;
     articleData["filepath"] = filepath;
     const article = await this._serviceClass.createRecord({

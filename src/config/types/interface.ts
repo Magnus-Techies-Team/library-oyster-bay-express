@@ -33,6 +33,9 @@ interface ApplicationConfig {
   };
   logger: LoggerConfig;
   security: securityConfig;
+  services: {
+    article: string;
+  };
 }
 
 interface securityConfig {
