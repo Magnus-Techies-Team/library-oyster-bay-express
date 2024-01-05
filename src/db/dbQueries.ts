@@ -6,6 +6,8 @@ import { RBACColumns } from "./types/tableColumns/rbac";
 import { RoleColumns } from "./types/tableColumns/roles";
 import { UserColumns } from "./types/tableColumns/users";
 import { PerUserOrganizationFileLimitsColumns } from "./types/tableColumns/perUserOrganizationFileLimits";
+import { SubscriptionsColumns } from "./types/tableColumns/subscriptions";
+import { SubscriptionsUsersColumns } from "./types/tableColumns/subscriptionsUsers";
 
 export const createPublicationTagsQuery = `create table if not exists ${Tables.publication_tags} (
     ${PublicationTagsColumns.id} serial primary key,
@@ -67,11 +69,12 @@ export const createUsersQuery = `create table if not exists ${Tables.users} (
 export const createSubscriptionsQuery = `
 CREATE TABLE IF NOT EXISTS ${Tables.subscriptions} (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    organization_limit INTEGER NOT NULL,
-    file_size_limit_mbytes INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ${SubscriptionsColumns.user_id} INTEGER NOT NULL,
+    ${SubscriptionsColumns.organization_limit_number} INTEGER NOT NULL,
+    ${SubscriptionsColumns.price} INTEGER NOT NULL,
+    ${SubscriptionsColumns.file_size_limit_number} INTEGER NOT NULL,
+    ${SubscriptionsColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ${SubscriptionsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );`;
 
@@ -85,4 +88,15 @@ CREATE TABLE IF NOT EXISTS ${Tables.per_user_organization_file_limits} (
     ${PerUserOrganizationFileLimitsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.user_id}) REFERENCES ${Tables.users}(${UserColumns.id}),
     FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.organization_id}) REFERENCES ${Tables.libraries}(${LibraryColumns.id})
+);`;
+
+export const createSubscriptionsUsersQuery = `
+CREATE TABLE IF NOT EXISTS ${Tables.subscriptions_users} (
+    ${SubscriptionsUsersColumns.subscription_id} INTEGER NOT NULL,
+    ${SubscriptionsUsersColumns.user_id} INTEGER NOT NULL,
+    ${SubscriptionsUsersColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ${SubscriptionsUsersColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (${SubscriptionsUsersColumns.subscription_id}, ${SubscriptionsUsersColumns.user_id}),
+    FOREIGN KEY (${SubscriptionsUsersColumns.subscription_id}) REFERENCES ${Tables.subscriptions}(${SubscriptionsColumns.id}),
+    FOREIGN KEY (${SubscriptionsUsersColumns.user_id}) REFERENCES ${Tables.users}(${UserColumns.id})
 );`;
