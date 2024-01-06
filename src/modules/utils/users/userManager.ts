@@ -6,6 +6,13 @@ import {
   NotFoundError,
 } from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
+import {
+  getUserOrganizationsQuery,
+  getUserSubscriptionQuery,
+} from "./dbQueries";
+import { LibrariesSchema } from "../../../db/types/tableSchemas/librariesSchema";
+import { SubscriptionsSchema } from "../../../db/types/tableSchemas/subscriptionsSchema";
+import { SubscriptionsUsersSchema } from "../../../db/types/tableSchemas/subscriptionsUsersSchema";
 
 export const userManagerToken = Symbol("userManagerToken");
 
@@ -58,5 +65,23 @@ export default class UserManager {
       throw new NotFoundError("User not found", "UserManager");
     }
     return result.rows[0];
+  }
+
+  public async getUserSubscription(
+    id: number
+  ): Promise<SubscriptionsSchema & SubscriptionsUsersSchema> {
+    const result = await this._DB.executeQuery<
+      SubscriptionsSchema & SubscriptionsUsersSchema
+    >(getUserSubscriptionQuery(id), []);
+    if (!result.rows.length) {
+      throw new NotFoundError("User not found", "UserManager");
+    }
+    return result.rows[0];
+  }
+
+  public async getUserOrganizations(id: number): Promise<LibrariesSchema[]> {
+    const query = getUserOrganizationsQuery(id);
+    const result = await this._DB.executeQuery<LibrariesSchema>(query, []);
+    return result.rows;
   }
 }

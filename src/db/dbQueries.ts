@@ -3,8 +3,8 @@ import { PublicationColumns } from "./types/tableColumns/publications";
 import { PublicationTagsColumns } from "./types/tableColumns/publicationTags";
 import { LibraryColumns } from "./types/tableColumns/libraries";
 import { RBACColumns } from "./types/tableColumns/rbac";
-import { RoleColumns } from "./types/tableColumns/roles";
-import { UserColumns } from "./types/tableColumns/users";
+import { RolesColumns } from "./types/tableColumns/roles";
+import { UsersColumns } from "./types/tableColumns/users";
 import { PerUserOrganizationFileLimitsColumns } from "./types/tableColumns/perUserOrganizationFileLimits";
 import { SubscriptionsColumns } from "./types/tableColumns/subscriptions";
 import { SubscriptionsUsersColumns } from "./types/tableColumns/subscriptionsUsers";
@@ -49,21 +49,21 @@ export const createRBACQuery = `create table if not exists ${Tables.rbac} (
 );`;
 
 export const createRolesQuery = `create table if not exists ${Tables.roles} (
-    ${RoleColumns.id} serial primary key,
-    ${RoleColumns.title} varchar(255) not null,
-    ${RoleColumns.access_level} integer not null,
-    ${RoleColumns.created_at} timestamp not null default current_timestamp,
-    ${RoleColumns.updated_at} timestamp not null default current_timestamp
+                                                                                ${RolesColumns.id}serial primary key,
+                                                                                ${RolesColumns.title}varchar(255) not null,
+    ${RolesColumns.access_level} integer not null,
+    ${RolesColumns.created_at} timestamp not null default current_timestamp,
+    ${RolesColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
 export const createUsersQuery = `create table if not exists ${Tables.users} (
-    ${UserColumns.id} serial primary key,
-    ${UserColumns.first_name} varchar(255) not null,
-    ${UserColumns.last_name} varchar(255) not null,
-    ${UserColumns.email} varchar(255) not null,
-    ${UserColumns.password} varchar(255) not null,
-    ${UserColumns.created_at} timestamp not null default current_timestamp,
-    ${UserColumns.updated_at} timestamp not null default current_timestamp
+                                                                                ${UsersColumns.id}serial primary key,
+                                                                                ${UsersColumns.first_name}varchar(255) not null,
+    ${UsersColumns.last_name} varchar (255) not null,
+    ${UsersColumns.email} varchar (255) not null,
+    ${UsersColumns.password} varchar (255) not null,
+    ${UsersColumns.created_at} timestamp not null default current_timestamp,
+    ${UsersColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
 export const createSubscriptionsQuery = `
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS ${Tables.per_user_organization_file_limits} (
     ${PerUserOrganizationFileLimitsColumns.file_size_limit} INTEGER NOT NULL,
     ${PerUserOrganizationFileLimitsColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ${PerUserOrganizationFileLimitsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.user_id}) REFERENCES ${Tables.users}(${UserColumns.id}),
+    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id}),
     FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.organization_id}) REFERENCES ${Tables.libraries}(${LibraryColumns.id})
 );`;
 
@@ -97,5 +97,5 @@ CREATE TABLE IF NOT EXISTS ${Tables.subscriptions_users} (
     ${SubscriptionsUsersColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (${SubscriptionsUsersColumns.subscription_id}, ${SubscriptionsUsersColumns.user_id}),
     FOREIGN KEY (${SubscriptionsUsersColumns.subscription_id}) REFERENCES ${Tables.subscriptions}(${SubscriptionsColumns.id}),
-    FOREIGN KEY (${SubscriptionsUsersColumns.user_id}) REFERENCES ${Tables.users}(${UserColumns.id})
+    FOREIGN KEY (${SubscriptionsUsersColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id})
 );`;

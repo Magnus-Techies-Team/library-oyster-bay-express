@@ -1,4 +1,4 @@
-export enum UserColumns {
+export enum UsersColumns {
   id = "id",
   email = "email",
   password = "password",

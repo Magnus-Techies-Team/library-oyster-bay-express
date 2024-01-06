@@ -1,4 +1,4 @@
-export enum RoleColumns {
+export enum RolesColumns {
   id = "id",
   title = "title",
   access_level = "access_level",

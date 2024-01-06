@@ -7,6 +7,7 @@ import { LibrariesSchema } from "../../../db/types/tableSchemas/librariesSchema"
 import fs from "fs";
 import { RBACEnforce } from "../RBAC/hooks/rbacEnforcementHook";
 import { AccessLevel } from "../../../db/types/customTypes";
+import UserManager, { userManagerToken } from "../users/userManager";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 
@@ -15,12 +16,21 @@ export default class LibraryManager {
   @Inject(serviceClassToken)
   private _serviceClass!: ServiceClass;
 
-  @RBACEnforce(AccessLevel.OWNER)
+  @Inject(userManagerToken)
+  private _userManager!: UserManager;
+
   public async createLibrary(libraryData: {
     name: string;
     description: string;
     owner_id: number;
   }): Promise<LibrariesSchema> {
+    const canCreateLibrary = await this.canCreateLibrary(libraryData.owner_id);
+    if (!canCreateLibrary) {
+      throw new BadRequestError(
+        "Your subscription does not allow you to create more libraries",
+        "LibraryManager"
+      );
+    }
     const library = await this._serviceClass.createRecord({
       tableName: Tables.libraries,
       columnObject: libraryData,
@@ -61,6 +71,18 @@ export default class LibraryManager {
     if (!fs.existsSync(authorsDir)) {
       fs.mkdirSync(authorsDir);
     }
+  }
+
+  private async canCreateLibrary(userId: number): Promise<boolean> {
+    const userSubscription = await this._userManager.getUserSubscription(
+      userId
+    );
+    const userOrganizations = await this._userManager.getUserOrganizations(
+      userId
+    );
+    return (
+      userOrganizations.length < userSubscription.organization_limit_number
+    );
   }
 
   private deleteLibraryFolder(libraryId: number): void {

@@ -8,6 +8,16 @@ import {
   articleStorageManagerToken,
 } from "./articleStorage";
 import { PublicationsSchema } from "../../../db/types/tableSchemas/publicationsSchema";
+import { RBACEnforce } from "../RBAC/hooks/rbacEnforcementHook";
+import { AccessLevel } from "../../../db/types/customTypes";
+import { DB, DBToken } from "../../../db";
+import {
+  getAllOrganizationsPublicationsQuery,
+  getHiddenOrganizationsPublicationsQuery,
+  getOrganizationPublicationsQuery,
+  getUserPublications,
+} from "./dbQueries";
+import AsyncStorageMap from "../RBAC/asyncStorage";
 
 export const articleManagerToken = Symbol("articleManagerToken");
 
@@ -17,6 +27,9 @@ export default class ArticleManager {
   private _serviceClass!: ServiceClass;
   @Inject(articleStorageManagerToken)
   private _articleStorageManager!: ArticleStorageManager;
+
+  @Inject(DBToken)
+  private _DB!: DB;
 
   public async createArticle(
     articleData: any,
@@ -72,5 +85,51 @@ export default class ArticleManager {
     }
     const filepath = article.filepath;
     return this._articleStorageManager.getFileContent(filepath);
+  }
+
+  @RBACEnforce(AccessLevel.USER)
+  public async getPersonalPublications() {
+    const userId = AsyncStorageMap.get("userId");
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const articles = await this._DB.executeQuery<PublicationsSchema>(
+      getUserPublications(userId, organizationId)
+    );
+    return articles.rows;
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async getUserPublications(userId: number) {
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const articles = await this._DB.executeQuery<PublicationsSchema>(
+      getUserPublications(userId, organizationId)
+    );
+    return articles.rows;
+  }
+
+  @RBACEnforce(AccessLevel.USER)
+  public async getOrganizationPublications() {
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const articles = await this._DB.executeQuery<PublicationsSchema>(
+      getOrganizationPublicationsQuery(organizationId)
+    );
+    return articles.rows;
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async getAllOrganizationPublications() {
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const articles = await this._DB.executeQuery<PublicationsSchema>(
+      getAllOrganizationsPublicationsQuery(organizationId)
+    );
+    return articles.rows;
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async getHiddenOrganizationPublications() {
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const articles = await this._DB.executeQuery<PublicationsSchema>(
+      getHiddenOrganizationsPublicationsQuery(organizationId)
+    );
+    return articles.rows;
   }
 }
