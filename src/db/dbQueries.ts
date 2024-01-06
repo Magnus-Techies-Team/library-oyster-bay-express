@@ -14,7 +14,8 @@ export const createPublicationTagsQuery = `create table if not exists ${Tables.p
     ${PublicationTagsColumns.publication_id} integer not null,
     ${PublicationTagsColumns.tag_id} integer not null,
     ${PublicationTagsColumns.created_at} timestamp not null default current_timestamp,
-    ${PublicationTagsColumns.updated_at} timestamp not null default current_timestamp
+    ${PublicationTagsColumns.updated_at} timestamp not null default current_timestamp,
+    FOREIGN KEY (${PublicationTagsColumns.publication_id}) REFERENCES ${Tables.publications} (${PublicationColumns.id})
 );`;
 
 export const createPublicationsQuery = `create table if not exists ${Tables.publications} (
@@ -28,7 +29,9 @@ export const createPublicationsQuery = `create table if not exists ${Tables.publ
     ${PublicationColumns.price} integer not null default 1,
     ${PublicationColumns.year} integer not null default 2020,
     ${PublicationColumns.created_at} timestamp not null default current_timestamp,
-    ${PublicationColumns.updated_at} timestamp not null default current_timestamp
+    ${PublicationColumns.updated_at} timestamp not null default current_timestamp,
+    FOREIGN KEY (${PublicationColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id}),
+    FOREIGN KEY (${PublicationColumns.library_id}) REFERENCES ${Tables.libraries} (${LibraryColumns.id})
 );`;
 
 export const createLibrariesQuery = `create table if not exists ${Tables.libraries} (
@@ -37,7 +40,8 @@ export const createLibrariesQuery = `create table if not exists ${Tables.librari
     ${LibraryColumns.owner_id} integer not null,
     ${LibraryColumns.description} text,
     ${LibraryColumns.created_at} timestamp not null default current_timestamp,
-    ${LibraryColumns.updated_at} timestamp not null default current_timestamp
+    ${LibraryColumns.updated_at} timestamp not null default current_timestamp,
+    FOREIGN KEY (${LibraryColumns.owner_id}) REFERENCES ${Tables.users} (${UsersColumns.id})
 );`;
 
 export const createRBACQuery = `create table if not exists ${Tables.rbac} (
@@ -46,20 +50,23 @@ export const createRBACQuery = `create table if not exists ${Tables.rbac} (
         ${RBACColumns.role_id} integer not null,
         ${RBACColumns.created_at} timestamp not null default current_timestamp,
         ${RBACColumns.updated_at} timestamp not null default current_timestamp,
-        PRIMARY KEY (${RBACColumns.library_id}, ${RBACColumns.user_id}, ${RBACColumns.role_id})
+        PRIMARY KEY (${RBACColumns.library_id}, ${RBACColumns.user_id}, ${RBACColumns.role_id}),
+        FOREIGN KEY (${RBACColumns.library_id}) REFERENCES ${Tables.libraries} (${LibraryColumns.id}),
+        FOREIGN KEY (${RBACColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id}),
+        FOREIGN KEY (${RBACColumns.role_id}) REFERENCES ${Tables.roles} (${RolesColumns.id})
 );`;
 
 export const createRolesQuery = `create table if not exists ${Tables.roles} (
-                                                                                ${RolesColumns.id}serial primary key,
-                                                                                ${RolesColumns.title}varchar(255) not null,
+    ${RolesColumns.id} serial primary key,
+    ${RolesColumns.title} varchar(255) not null,
     ${RolesColumns.access_level} integer not null,
     ${RolesColumns.created_at} timestamp not null default current_timestamp,
     ${RolesColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
 export const createUsersQuery = `create table if not exists ${Tables.users} (
-                                                                                ${UsersColumns.id}serial primary key,
-                                                                                ${UsersColumns.first_name}varchar(255) not null,
+    ${UsersColumns.id} serial primary key,
+    ${UsersColumns.first_name} varchar(255) not null,
     ${UsersColumns.last_name} varchar (255) not null,
     ${UsersColumns.email} varchar (255) not null,
     ${UsersColumns.password} varchar (255) not null,
@@ -69,13 +76,12 @@ export const createUsersQuery = `create table if not exists ${Tables.users} (
 
 export const createSubscriptionsQuery = `
 CREATE TABLE IF NOT EXISTS ${Tables.subscriptions} (
-    id SERIAL PRIMARY KEY,
+    ${SubscriptionsColumns.id} SERIAL PRIMARY KEY,
     ${SubscriptionsColumns.organization_limit_number} INTEGER NOT NULL,
     ${SubscriptionsColumns.price} INTEGER NOT NULL,
     ${SubscriptionsColumns.file_size_limit_number} INTEGER NOT NULL,
     ${SubscriptionsColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ${SubscriptionsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    ${SubscriptionsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );`;
 
 export const createPerUserOrganizationFileLimitsQuery = `
@@ -87,7 +93,7 @@ CREATE TABLE IF NOT EXISTS ${Tables.per_user_organization_file_limits} (
     ${PerUserOrganizationFileLimitsColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ${PerUserOrganizationFileLimitsColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id}),
-    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.organization_id}) REFERENCES ${Tables.libraries}(${LibraryColumns.id})
+    FOREIGN KEY (${PerUserOrganizationFileLimitsColumns.organization_id}) REFERENCES ${Tables.libraries} (${LibraryColumns.id})
 );`;
 
 export const createSubscriptionsUsersQuery = `
@@ -97,6 +103,6 @@ CREATE TABLE IF NOT EXISTS ${Tables.subscriptions_users} (
     ${SubscriptionsUsersColumns.created_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ${SubscriptionsUsersColumns.updated_at} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (${SubscriptionsUsersColumns.subscription_id}, ${SubscriptionsUsersColumns.user_id}),
-    FOREIGN KEY (${SubscriptionsUsersColumns.subscription_id}) REFERENCES ${Tables.subscriptions}(${SubscriptionsColumns.id}),
+    FOREIGN KEY (${SubscriptionsUsersColumns.subscription_id}) REFERENCES ${Tables.subscriptions} (${SubscriptionsColumns.id}),
     FOREIGN KEY (${SubscriptionsUsersColumns.user_id}) REFERENCES ${Tables.users} (${UsersColumns.id})
 );`;

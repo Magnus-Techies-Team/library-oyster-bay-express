@@ -14,12 +14,12 @@ import { DB, DBToken } from "./DBService";
 
 export const initLocalDatabaseIfNotExists = async () => {
   const queryToExecute = `
-    ${createLibrariesQuery}
-    ${createRBACQuery}
-    ${createPublicationTagsQuery}
-    ${createPublicationsQuery}
-    ${createRolesQuery}
     ${createUsersQuery}
+    ${createLibrariesQuery}
+    ${createRolesQuery}
+    ${createRBACQuery}
+    ${createPublicationsQuery}
+    ${createPublicationTagsQuery}
     ${createSubscriptionsQuery}
     ${createPerUserOrganizationFileLimitsQuery}
     ${createSubscriptionsUsersQuery}
