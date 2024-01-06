@@ -10,8 +10,8 @@ import { AccessLevel } from "../../../db/types/customTypes";
 import UserManager, { userManagerToken } from "../users/userManager";
 import asyncStorage from "../RBAC/asyncStorage";
 import { addUserToOrganizationQuery } from "./dbQueries";
-import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
 import { DB, DBToken } from "../../../db";
+import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 

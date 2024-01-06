@@ -58,7 +58,7 @@ export default class UserManager {
     }
   }
 
-  public async getUser(id: string): Promise<any> {
+  public async getUser(id: number): Promise<any> {
     const query = `select login, email from ${Tables.users} where id=${id}`;
     const result = await this._DB.executeQuery(query, []);
     if (!result.rows.length) {

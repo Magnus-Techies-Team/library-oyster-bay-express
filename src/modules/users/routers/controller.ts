@@ -79,8 +79,8 @@ export class UserController {
     req: FastifyRequest,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const uuid = req.cookies.uuid;
-    if (!uuid) {
+    const uuid = Number(req.cookies.uuid);
+    if (!uuid || isNaN(uuid)) {
       throw new UnauthorizedError("User is not authorized", "UserController");
     }
     const userData = await this._userManagerService.getUser(uuid);
