@@ -10,6 +10,9 @@ import fastifyCookieOptions from "./server/options/fastifyCookieOptions";
 import fastifyRequestTracerOptions from "./server/options/fastifyRequestTracerOptions";
 import * as rTracer from "cls-rtracer";
 import fastifyMultipart from "@fastify/multipart";
+import { LibraryController } from "./modules/library/routers/controller";
+import { UserController } from "./modules/users/routers/controller";
+import { ArticleController } from "./modules/article/routers/controller";
 
 const server = new Server(
   fastify({
@@ -37,7 +40,7 @@ server.registerPlugin({
   options: {},
 });
 server.registerPlugins();
-server.registerControllers([]);
+server.registerControllers([UserController, LibraryController, ArticleController ]);
 server.findReferencesSchemas();
 server.addReferencesSchemas();
 

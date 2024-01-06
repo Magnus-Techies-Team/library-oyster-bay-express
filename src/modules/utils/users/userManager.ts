@@ -23,7 +23,8 @@ export default class UserManager {
   @Inject(serviceClassToken)
   private _serviceClass!: ServiceClass;
   public async createUser(userData: {
-    login: string;
+    first_name: string;
+    last_name: string;
     password: string;
     email: string;
   }): Promise<any> {
@@ -41,13 +42,13 @@ export default class UserManager {
   }
 
   public async login(userData: {
-    login: string;
+    email: string;
     password: string;
   }): Promise<any> {
     const user = await this._serviceClass.getRecord({
       tableName: Tables.users,
-      searchBy: "login",
-      value: userData.login,
+      searchBy: "email",
+      value: userData.email,
     });
     if (userData.password !== user.rows[0].password) {
       throw new BadRequestError("Wrong password", "UserManager");

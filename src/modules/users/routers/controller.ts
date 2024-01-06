@@ -53,9 +53,10 @@ export class UserController {
         sameSite: "strict",
         expires: expDate,
       })
-      .setCookie("uuid", user.id, {
+      .setCookie("id", user.id, {
         path: "/",
         domain: "localhost",
+        httpOnly: true,
         sameSite: "strict",
         expires: expDate,
       })
@@ -70,7 +71,7 @@ export class UserController {
   ): Promise<FastifyReply> {
     rep.clearCookie("ref");
     rep.clearCookie("acc");
-    rep.clearCookie("uuid");
+    rep.clearCookie("id");
     return rep.status(200).send({ message: "Logout" });
   }
 

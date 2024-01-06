@@ -11,7 +11,7 @@ import LibraryManager, {
 import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
 
 @Controller("/library")
-export class UserController {
+export class LibraryController {
   @Inject(libraryManagerToken)
   private _libraryManagerService!: LibraryManager;
 

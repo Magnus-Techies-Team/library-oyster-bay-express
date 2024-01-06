@@ -7,7 +7,8 @@ import { ReplyGenericInterface } from "fastify/types/reply";
 
 interface RequestGenericInterfaceCreateUser {
   Body: {
-    login: string;
+    first_name: string;
+    last_name: string;
     email: string;
     password: string;
   };
@@ -18,7 +19,7 @@ interface RequestGenericInterfaceCreateUser {
 
 interface RequestGenericInterfaceLogin {
   Body: {
-    login: string;
+    email: string;
     password: string;
   };
   Querystring?: RequestQuerystringDefault;
