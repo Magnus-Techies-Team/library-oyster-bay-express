@@ -20,7 +20,7 @@ export class LibraryController {
     req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.createLibrary(req.body);
+    const library = await this._libraryManagerService.createLibrary(req.body, Number(req.cookies.id));
     return rep.status(200).send(library);
   }
 
@@ -38,7 +38,7 @@ export class LibraryController {
     req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.createLibrary(req.body);
+    const library = await this._libraryManagerService.createLibrary(req.body, req.body.owner_id);
     return rep.status(200).send(library);
   }
 }

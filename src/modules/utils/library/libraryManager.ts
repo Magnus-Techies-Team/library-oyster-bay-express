@@ -29,15 +29,15 @@ export default class LibraryManager {
   public async createLibrary(libraryData: {
     name: string;
     description: string;
-    owner_id: number;
-  }): Promise<LibrariesSchema> {
-    const canCreateLibrary = await this.canCreateLibrary(libraryData.owner_id);
+  }, owner_id: number): Promise<LibrariesSchema> {
+    const canCreateLibrary = await this.canCreateLibrary(owner_id);
     if (!canCreateLibrary) {
       throw new BadRequestError(
         "Your subscription does not allow you to create more libraries",
         "LibraryManager"
       );
     }
+    libraryData['owner_id'] = owner_id;
     const library = await this._serviceClass.createRecord({
       tableName: Tables.libraries,
       columnObject: libraryData,

@@ -10,7 +10,7 @@ interface RequestGenericInterfaceCreateLibrary {
   Body: {
     name: string,
     description: string,
-    owner_id: number
+    owner_id?: number
   };
   Querystring?: RequestQuerystringDefault;
   Params: RequestParamsDefault;
