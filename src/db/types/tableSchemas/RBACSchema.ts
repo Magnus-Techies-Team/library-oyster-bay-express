@@ -1,4 +1,4 @@
-export type RbacSchema = {
+export type RBACSchema = {
   user_id: number;
   title: number;
   access_level: number;

@@ -15,7 +15,7 @@ export class UserController {
   @Inject(libraryManagerToken)
   private _libraryManagerService!: LibraryManager;
 
-  @POST("/", { preHandler: authorizeUserHook })
+  @POST("/", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async createLibrary(
     req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
     rep: FastifyReply
@@ -24,12 +24,21 @@ export class UserController {
     return rep.status(200).send(library);
   }
 
-  @GET("/", { preHandler: verifyJWTHook })
+  @GET("/", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async getLibrary(
     req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
     const library = await this._libraryManagerService.getLibrary(req.query.id);
+    return rep.status(200).send(library);
+  }
+
+  @POST("/users/add", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  public async addUserToLibrary(
+    req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
+    rep: FastifyReply
+  ): Promise<FastifyReply> {
+    const library = await this._libraryManagerService.createLibrary(req.body);
     return rep.status(200).send(library);
   }
 }

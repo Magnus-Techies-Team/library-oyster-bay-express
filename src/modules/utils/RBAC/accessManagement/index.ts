@@ -1,6 +1,6 @@
 import { Inject, Service } from "fastify-decorators";
 import { DB, DBToken } from "../../../../db";
-import { RbacSchema } from "../../../../db/types/tableSchemas/rbacSchema";
+import { RBACSchema } from "../../../../db/types/tableSchemas/RBACSchema";
 import { getAccessLevel } from "./dbQueries";
 import { QueryResult } from "pg";
 import { RolesSchema } from "../../../../db/types/tableSchemas/rolesSchema";
@@ -15,7 +15,7 @@ export default class AccessManager {
   public async getAccessLevel(
     userId: number,
     organizationId: number
-  ): Promise<QueryResult<RbacSchema & RolesSchema>> {
+  ): Promise<QueryResult<RBACSchema & RolesSchema>> {
     return await this._DB.executeQuery(
       getAccessLevel(userId, organizationId),
       []

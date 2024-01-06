@@ -8,6 +8,10 @@ import fs from "fs";
 import { RBACEnforce } from "../RBAC/hooks/rbacEnforcementHook";
 import { AccessLevel } from "../../../db/types/customTypes";
 import UserManager, { userManagerToken } from "../users/userManager";
+import asyncStorage from "../RBAC/asyncStorage";
+import { addUserToOrganizationQuery } from "./dbQueries";
+import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
+import { DB, DBToken } from "../../../db";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 
@@ -18,6 +22,9 @@ export default class LibraryManager {
 
   @Inject(userManagerToken)
   private _userManager!: UserManager;
+
+  @Inject(DBToken)
+  private _DB!: DB;
 
   public async createLibrary(libraryData: {
     name: string;
@@ -53,6 +60,39 @@ export default class LibraryManager {
       );
     }
     return library.rows[0];
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async addUser(userId: number): Promise<void> {
+    const organizationId = asyncStorage.get("organizationId");
+    const library = await this._serviceClass.getRecord({
+      tableName: Tables.libraries,
+      searchBy: LibraryColumns.id,
+      value: organizationId,
+    });
+    if (!library.rows.length) {
+      throw new BadRequestError(
+        `Library with id ${organizationId} not found`,
+        "LibraryManager"
+      );
+    }
+    const user = await this._userManager.getUser(userId);
+    if (!user) {
+      throw new BadRequestError(
+        `User with id ${userId} not found`,
+        "LibraryManager"
+      );
+    }
+    await this.addUserToOrganization(userId);
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  private async addUserToOrganization(userId: number): Promise<RBACSchema> {
+    const organizationId = asyncStorage.get("organizationId");
+    const result = await this._DB.executeQuery<RBACSchema>(
+      addUserToOrganizationQuery(userId, organizationId)
+    );
+    return result.rows[0];
   }
 
   private createLibraryFolder(libraryId: number): void {
