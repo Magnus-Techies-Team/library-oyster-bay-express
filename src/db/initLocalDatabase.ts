@@ -1,8 +1,8 @@
 import {
-  createLibraryQuery,
+  createLibrariesQuery,
   createPublicationTagsQuery,
   createRBACQuery,
-  createPublicationQuery,
+  createPublicationsQuery,
   createRolesQuery,
   createUsersQuery,
   createSubscriptionsQuery,
@@ -14,10 +14,10 @@ import { DB, DBToken } from "./DBService";
 
 export const initLocalDatabaseIfNotExists = async () => {
   const queryToExecute = `
-    ${createLibraryQuery}
+    ${createLibrariesQuery}
     ${createRBACQuery}
     ${createPublicationTagsQuery}
-    ${createPublicationQuery}
+    ${createPublicationsQuery}
     ${createRolesQuery}
     ${createUsersQuery}
     ${createSubscriptionsQuery}

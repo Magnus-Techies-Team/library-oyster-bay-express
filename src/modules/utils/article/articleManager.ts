@@ -2,7 +2,6 @@ import { Inject, Service } from "fastify-decorators";
 import ServiceClass, { serviceClassToken } from "../common/serviceClass";
 import { BadRequestError } from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
-import { PublicationColumns } from "../../../db/types/tableColumns/publications";
 import {
   ArticleStorageManager,
   articleStorageManagerToken,
@@ -13,11 +12,16 @@ import { AccessLevel } from "../../../db/types/customTypes";
 import { DB, DBToken } from "../../../db";
 import {
   getAllOrganizationsPublicationsQuery,
-  getHiddenOrganizationsPublicationsQuery,
+  getOrganizationsHiddenPublicationsQuery,
+  getOrganizationHiddenPublicationsByUserIdQuery,
+  getOrganizationPublicationByIdAndOrganizationQuery,
   getOrganizationPublicationsQuery,
   getUserPublications,
+  setPublicationApprovalByIdAndOrganizationQuery,
+  setPublicationVisibilityByIdAndOrganizationQuery,
 } from "./dbQueries";
 import AsyncStorageMap from "../RBAC/asyncStorage";
+import { QueryResult } from "pg";
 
 export const articleManagerToken = Symbol("articleManagerToken");
 
@@ -31,7 +35,8 @@ export default class ArticleManager {
   @Inject(DBToken)
   private _DB!: DB;
 
-  public async createArticle(
+  @RBACEnforce(AccessLevel.USER)
+  public async createPublication(
     articleData: any,
     content: any
   ): Promise<PublicationsSchema> {
@@ -45,12 +50,81 @@ export default class ArticleManager {
     return article.rows[0];
   }
 
-  public async getArticle(id: number) {
-    const article = await this._serviceClass.getRecord({
-      tableName: Tables.publications,
-      searchBy: PublicationColumns.id,
-      value: id,
-    });
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async approvePublication(
+    publicationId: number
+  ): Promise<PublicationsSchema> {
+    const publication = await this.getPublication(publicationId);
+    if (publication.is_public)
+      throw new BadRequestError(
+        "Publication is already public",
+        "ArticleManager"
+      );
+    return await this.setPublicationApproval(publicationId, true);
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async makePublicationPublic(
+    publicationId: number
+  ): Promise<PublicationsSchema> {
+    const publication = await this.getPublication(publicationId);
+    if (publication.is_public)
+      throw new BadRequestError(
+        "Publication is already public",
+        "ArticleManager"
+      );
+    return await this.setPublicationApproval(publicationId, true);
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  private async setPublicationVisibility(
+    publicationId: number,
+    isPublic: boolean
+  ) {
+    const publication = await this.getPublication(publicationId);
+    const organizationId = AsyncStorageMap.get("organizationId");
+    if (publication.is_public === isPublic)
+      throw new BadRequestError(
+        `Publication is already ${isPublic ? "public" : "hidden"}`,
+        "ArticleManager"
+      );
+    const updatedPublication = await this._DB.executeQuery<PublicationsSchema>(
+      setPublicationVisibilityByIdAndOrganizationQuery(
+        publicationId,
+        organizationId,
+        isPublic
+      )
+    );
+    return updatedPublication.rows[0];
+  }
+
+  @RBACEnforce(AccessLevel.MODERATOR)
+  public async setPublicationApproval(
+    publicationId: number,
+    isApproved: boolean
+  ) {
+    const publication = await this.getPublication(publicationId);
+    const organizationId = AsyncStorageMap.get("organizationId");
+    if (publication.is_approved === isApproved)
+      throw new BadRequestError(
+        `Publication is already ${isApproved ? "approved" : "disapproved"}`,
+        "ArticleManager"
+      );
+    const updatedPublication = await this._DB.executeQuery<PublicationsSchema>(
+      setPublicationApprovalByIdAndOrganizationQuery(
+        publicationId,
+        organizationId,
+        isApproved
+      )
+    );
+    return updatedPublication.rows[0];
+  }
+
+  public async getPublication(id: number) {
+    const organizationId = AsyncStorageMap.get("organizationId");
+    const article = await this._DB.executeQuery<PublicationsSchema>(
+      getOrganizationPublicationByIdAndOrganizationQuery(id, organizationId)
+    );
     if (!article.rows.length) {
       throw new BadRequestError(
         `Article with id ${id} not found`,
@@ -60,23 +134,9 @@ export default class ArticleManager {
     return article.rows[0];
   }
 
-  public async getAllArticles(organizationId: number) {
-    const article = await this._serviceClass.getRecord({
-      tableName: Tables.publications,
-      searchBy: PublicationColumns.library_id,
-      value: organizationId,
-    });
-    if (!article.rows.length) {
-      throw new BadRequestError(
-        `No articles for library wuth id ${organizationId} found`,
-        "ArticleManager"
-      );
-    }
-    return article.rows[0];
-  }
-
+  @RBACEnforce(AccessLevel.USER)
   public async getArticleContent(id: number) {
-    const article = await this.getArticle(id);
+    const article = await this.getPublication(id);
     if (!article) {
       throw new BadRequestError(
         `Article with id ${id} not found`,
@@ -109,10 +169,22 @@ export default class ArticleManager {
   @RBACEnforce(AccessLevel.USER)
   public async getOrganizationPublications() {
     const organizationId = AsyncStorageMap.get("organizationId");
-    const articles = await this._DB.executeQuery<PublicationsSchema>(
+    const userId = AsyncStorageMap.get("userId");
+    let publications: QueryResult<PublicationsSchema>,
+      hiddenPublications: QueryResult<PublicationsSchema>;
+    publications = await this._DB.executeQuery<PublicationsSchema>(
       getOrganizationPublicationsQuery(organizationId)
     );
-    return articles.rows;
+    try {
+      hiddenPublications = await this._DB.executeQuery<PublicationsSchema>(
+        getOrganizationsHiddenPublicationsQuery(userId)
+      );
+    } catch (error) {
+      hiddenPublications = await this._DB.executeQuery<PublicationsSchema>(
+        getOrganizationHiddenPublicationsByUserIdQuery(userId)
+      );
+    }
+    return [...publications.rows, ...hiddenPublications.rows];
   }
 
   @RBACEnforce(AccessLevel.MODERATOR)
@@ -128,7 +200,7 @@ export default class ArticleManager {
   public async getHiddenOrganizationPublications() {
     const organizationId = AsyncStorageMap.get("organizationId");
     const articles = await this._DB.executeQuery<PublicationsSchema>(
-      getHiddenOrganizationsPublicationsQuery(organizationId)
+      getOrganizationsHiddenPublicationsQuery(organizationId)
     );
     return articles.rows;
   }

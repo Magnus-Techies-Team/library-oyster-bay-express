@@ -4,18 +4,26 @@ import AsyncStorageMap from "../asyncStorage";
 import { resolvePromise } from "../asyncStorage/resolvePromise";
 import logger from "../../../../server/utils/logger";
 import { AuthorizationHookResponse } from "../asyncStorage/types";
+import { RouteGenericInterfaceWithOrganizationId } from "./types";
+import { ForbiddenError } from "../../../../server/utils/common/errors/error";
 
 export const authorizeUserHook = (
-  req: FastifyRequest,
+  req: FastifyRequest<RouteGenericInterfaceWithOrganizationId>,
   res: FastifyReply,
   done: any
 ) => {
   resolvePromise(async (): Promise<AuthorizationHookResponse | undefined> => {
     console.log(req.routerPath);
     try {
+      const organizationId = req.query.organizationId;
+      if (!organizationId)
+        throw new ForbiddenError(
+          "Organization id is not provided",
+          "authorizeUserHook"
+        );
       const user = {
         id: 1,
-        organizationId: 1,
+        organizationId: organizationId,
       };
       logger.info(
         {

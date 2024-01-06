@@ -1,8 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Controller, GET, Inject, POST } from "fastify-decorators";
 import {
-  RouteGenericInterfaceCreateLibrary,
-  RouteGenericInterfaceGetLibrary,
+  RouteGenericInterfaceApprovePublication,
+  RouteGenericInterfaceCreatePublication,
+  RouteGenericInterfaceGetOrganizationPublications,
+  RouteGenericInterfaceGetPublicationContent,
 } from "../types/reqInterface";
 import { verifyJWTHook } from "../../utils/users/verifyJWTHook";
 import ArticleManager, {
@@ -10,66 +12,63 @@ import ArticleManager, {
 } from "../../utils/article/articleManager";
 import { _CONTENT_TYPE } from "../../utils/article/formatContentTypes";
 import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
-import { RBACEnforce } from "../../utils/RBAC/hooks/rbacEnforcementHook";
-import { AccessLevel } from "../../../db/types/customTypes";
 
-@Controller("/article")
+@Controller("/publications")
 export class ArticleController {
   @Inject(articleManagerToken)
   private _articleManagerService!: ArticleManager;
 
-  @POST("/", { preValidation: authorizeUserHook })
+  @POST("/", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async createArticle(
-    req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
+    req: FastifyRequest<RouteGenericInterfaceCreatePublication>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._articleManagerService.createArticle(
+    const publication = await this._articleManagerService.createPublication(
       req.body,
       await req.file()
     );
-    return rep.status(200).send(library);
+    return rep.status(200).send(publication);
   }
 
-  @POST("/publish", { preValidation: authorizeUserHook })
+  @POST("/publish", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async publishArticle(
-    req: FastifyRequest<any>,
+    req: FastifyRequest<RouteGenericInterfaceApprovePublication>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._articleManagerService.createArticle(
-      req.body,
-      await req.file()
+    const publication = await this._articleManagerService.makePublicationPublic(
+      req.body.id
     );
-    return rep.status(200).send(library);
+    return rep.status(200).send(publication);
   }
 
-  @GET("/:id", { preHandler: verifyJWTHook })
+  @GET("/:id", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async getArticle(
-    req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
+    req: FastifyRequest<RouteGenericInterfaceGetOrganizationPublications>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const article = await this._articleManagerService.getArticle(req.query.id);
-    return rep.status(200).send(article);
-  }
-
-  @GET("/library/:id", { preHandler: verifyJWTHook })
-  public async getAllArticles(
-    req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
-    rep: FastifyReply
-  ): Promise<FastifyReply> {
-    const articles = await this._articleManagerService.getAllArticles(
-      req.query.id
+    const publication = await this._articleManagerService.getPublication(
+      req.params.id
     );
-    return rep.status(200).send(articles);
+    return rep.status(200).send(publication);
   }
 
-  @RBACEnforce(AccessLevel.USER)
-  @GET("/download/:id", { preValidation: verifyJWTHook })
+  @GET("/library", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  public async getAllArticles(
+    req: FastifyRequest<RouteGenericInterfaceGetOrganizationPublications>,
+    rep: FastifyReply
+  ): Promise<FastifyReply> {
+    const publications =
+      await this._articleManagerService.getOrganizationPublications();
+    return rep.status(200).send(publications);
+  }
+
+  @GET("/download/:id", { preValidation: [verifyJWTHook, authorizeUserHook] })
   public async downloadArticle(
-    req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
+    req: FastifyRequest<RouteGenericInterfaceGetPublicationContent>,
     rep: FastifyReply
   ) {
     const fileContent = await this._articleManagerService.getArticleContent(
-      req.query.id
+      req.params.id
     );
     const contentType = _CONTENT_TYPE[fileContent.format];
     rep.header("Content-Type", contentType).send(fileContent.content);

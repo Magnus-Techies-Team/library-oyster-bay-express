@@ -3,6 +3,7 @@ export enum PublicationColumns {
   user_id = "user_id",
   title = "title",
   is_public = "is_public",
+  is_approved = "is_approved",
   price = "price",
   filepath = "filepath",
   library_id = "library_id",

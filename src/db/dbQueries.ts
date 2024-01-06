@@ -17,20 +17,21 @@ export const createPublicationTagsQuery = `create table if not exists ${Tables.p
     ${PublicationTagsColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
-export const createPublicationQuery = `create table if not exists ${Tables.publications} (
+export const createPublicationsQuery = `create table if not exists ${Tables.publications} (
     ${PublicationColumns.id} serial primary key,
     ${PublicationColumns.title} varchar(255) not null,
     ${PublicationColumns.filepath} varchar(255) not null,
     ${PublicationColumns.user_id} integer not null,
     ${PublicationColumns.library_id} integer not null,
-    ${PublicationColumns.is_public} boolean not null default false,
+    ${PublicationColumns.is_public} boolean not null default true,
+    ${PublicationColumns.is_approved} boolean not null default false,
     ${PublicationColumns.price} integer not null default 1,
     ${PublicationColumns.year} integer not null default 2020,
     ${PublicationColumns.created_at} timestamp not null default current_timestamp,
     ${PublicationColumns.updated_at} timestamp not null default current_timestamp
 );`;
 
-export const createLibraryQuery = `create table if not exists ${Tables.libraries} (
+export const createLibrariesQuery = `create table if not exists ${Tables.libraries} (
     ${LibraryColumns.id} serial primary key,
     ${LibraryColumns.name} varchar(255) not null,
     ${LibraryColumns.owner_id} integer not null,

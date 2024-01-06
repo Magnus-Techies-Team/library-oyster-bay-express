@@ -1,36 +1,68 @@
 import {
   RequestHeadersDefault,
-  RequestQuerystringDefault,
   RequestParamsDefault,
   RequestBodyDefault,
 } from "fastify";
 import { ReplyGenericInterface } from "fastify/types/reply";
 
-interface RequestGenericInterfaceCreateLibrary {
+interface RequestGenericInterfaceCreatePublication {
   Body: {
-    name: string,
-    description: string,
-    owner_id: number
+    name: string;
+    description: string;
+    owner_id: number;
   };
-  Querystring?: RequestQuerystringDefault;
+  Querystring?: {
+    organizationId: number;
+  };
   Params: RequestParamsDefault;
   Headers?: RequestHeadersDefault;
 }
 
-interface RequestGenericInterfaceGetLibrary {
+interface RequestGenericInterfaceGetOrganizationPublications {
   Body: RequestBodyDefault;
   Querystring?: {
-    id: number
+    organization_id: number;
+  };
+  Params: {
+    id: number;
+  };
+  Headers?: RequestHeadersDefault;
+}
+
+interface RequestGenericInterfaceApprovePublication {
+  Body: {
+    id: number;
+  };
+  Querystring?: {
+    organizationId: number;
   };
   Params: RequestParamsDefault;
   Headers?: RequestHeadersDefault;
 }
 
-export interface RouteGenericInterfaceCreateLibrary
-  extends RequestGenericInterfaceCreateLibrary,
+interface RequestGenericInterfaceGetPublicationContent {
+  Body: RequestBodyDefault;
+  Querystring: {
+    organization_id: number;
+  };
+  Params: {
+    id: number;
+  };
+  Headers?: RequestHeadersDefault;
+}
+
+export interface RouteGenericInterfaceCreatePublication
+  extends RequestGenericInterfaceCreatePublication,
     ReplyGenericInterface {}
 
-export interface RouteGenericInterfaceGetLibrary
-  extends RequestGenericInterfaceGetLibrary,
+export interface RouteGenericInterfaceGetOrganizationPublications
+  extends RequestGenericInterfaceGetOrganizationPublications,
     ReplyGenericInterface {}
-  
+
+export interface RouteGenericInterfaceApprovePublication
+  extends RequestGenericInterfaceApprovePublication,
+    ReplyGenericInterface {}
+
+export interface RouteGenericInterfaceGetPublicationContent
+  extends RequestGenericInterfaceGetPublicationContent,
+    ReplyGenericInterface {}
