@@ -85,4 +85,8 @@ export default class UserManager {
     const result = await this._DB.executeQuery<LibrariesSchema>(query, []);
     return result.rows;
   }
+  //
+  // public async setBasicRole(userId: number): Promise<void> {
+  //
+  // }
 }

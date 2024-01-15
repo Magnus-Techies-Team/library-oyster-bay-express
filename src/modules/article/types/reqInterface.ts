@@ -7,9 +7,10 @@ import { ReplyGenericInterface } from "fastify/types/reply";
 
 interface RequestGenericInterfaceCreatePublication {
   Body: {
-    name: string;
+    title: string;
     description: string;
-    owner_id: number;
+    price: number;
+    year: number;
   };
   Querystring?: {
     organizationId: number;
@@ -29,7 +30,7 @@ interface RequestGenericInterfaceGetOrganizationPublications {
   Headers?: RequestHeadersDefault;
 }
 
-interface RequestGenericInterfaceApprovePublication {
+interface RequestGenericInterfaceChangePublicationState {
   Body: {
     id: number;
   };
@@ -59,8 +60,8 @@ export interface RouteGenericInterfaceGetOrganizationPublications
   extends RequestGenericInterfaceGetOrganizationPublications,
     ReplyGenericInterface {}
 
-export interface RouteGenericInterfaceApprovePublication
-  extends RequestGenericInterfaceApprovePublication,
+export interface RouteGenericInterfaceChangePublicationState
+  extends RequestGenericInterfaceChangePublicationState,
     ReplyGenericInterface {}
 
 export interface RouteGenericInterfaceGetPublicationContent

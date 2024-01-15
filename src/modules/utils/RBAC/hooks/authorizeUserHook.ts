@@ -13,16 +13,22 @@ export const authorizeUserHook = (
   done: any
 ) => {
   resolvePromise(async (): Promise<AuthorizationHookResponse | undefined> => {
-    console.log(req.routerPath);
+    logger.info(req.routerPath, "Authorization User Hook Router Path");
     try {
-      const organizationId = req.query.organizationId;
+      const organizationId = Number(req.query.organizationId);
       if (!organizationId)
         throw new ForbiddenError(
           "Organization id is not provided",
           "authorizeUserHook"
         );
+      const userId = Number(req.cookies["id"]);
+      if (!userId)
+        throw new ForbiddenError(
+          "User id is not provided",
+          "authorizeUserHook"
+        );
       const user = {
-        id: 1,
+        id: userId,
         organizationId: organizationId,
       };
       logger.info(
@@ -34,11 +40,10 @@ export const authorizeUserHook = (
       );
       return { userId: user.id, organizationId: user.organizationId };
     } catch (error) {
-      done(error);
+      done(error as ForbiddenError);
     }
   }).then((value) => {
     if (value) {
-      if (!value.organizationId) value.organizationId = 0;
       // instead of null there will be an auth function to get permission based on user x-id
       AsyncStorageMap.initStorage(
         () => {
@@ -47,7 +52,7 @@ export const authorizeUserHook = (
         },
         {
           userId: value.userId,
-          userExternalId: value.organizationId,
+          organizationId: value.organizationId,
         }
       );
     }

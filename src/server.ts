@@ -40,8 +40,13 @@ server.registerPlugin({
   options: {},
 });
 server.registerPlugins();
-server.registerControllers([UserController, LibraryController, ArticleController ]);
+server.registerControllers([
+  UserController,
+  LibraryController,
+  ArticleController,
+]);
 server.findReferencesSchemas();
 server.addReferencesSchemas();
+server.registerErrorHandler();
 
 export default server;

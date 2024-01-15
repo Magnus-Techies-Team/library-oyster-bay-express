@@ -1,10 +1,21 @@
 import { bootstrap } from "fastify-decorators";
 import { IncomingMessage, Server as httpServer, ServerResponse } from "http";
 import { plugin, pluginSet, router, routerSet } from "./types";
-import { FastifyInstance, FastifyPluginOptions, RouteOptions } from "fastify";
+import {
+  FastifyInstance,
+  FastifyPluginOptions,
+  FastifyReply,
+  FastifyRequest,
+  RouteOptions,
+} from "fastify";
 import { SchemaObject } from "ajv";
 import fs from "fs";
 import { initLocalDatabaseIfNotExists } from "../db/initLocalDatabase";
+import { GenericError } from "./utils/common/errors/error";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import { RestError } from "./utils/common/errors/restError";
+import { AxiosError } from "axios";
+import { ErrorsTypes } from "./utils/common/errors/errorTypes";
 
 export default class Server {
   private setOfRouters: routerSet;
@@ -130,6 +141,101 @@ export default class Server {
     // console.log("References Schemas List: ", this._referencesSchemasList);
     const list = this._referencesSchemasList;
     if (list.length) list.forEach((schema) => this.addSchema(schema));
+  }
+
+  public registerErrorHandler() {
+    this.serverInstance.setErrorHandler(
+      (error: GenericError, req: FastifyRequest, rep: FastifyReply) => {
+        if (!error.info) {
+          // Custom error handler for JWT & Swagger
+          /** Swagger error instance */
+          if (error && error["validation"] && error["validationContext"]) {
+            Object.assign(error, {
+              info: {
+                statusCode: ErrorsTypes.BadRequest.statusCode,
+                errorMessage:
+                  error.message || ErrorsTypes.BadRequest.errorMessage,
+              },
+            });
+            return rep
+              .code(error["info"]["statusCode"])
+              .send(
+                new RestError(
+                  error.info,
+                  error["info"]["errorMessage"],
+                  "System(Swagger)"
+                )
+              );
+          }
+          /** Axios error instance */
+          if (error instanceof AxiosError) {
+            Object.assign(error, {
+              info: {
+                statusCode:
+                  error?.response?.status ?? ErrorsTypes.ServerError.statusCode,
+                errorMessage: Object.keys(error?.response?.data)?.length
+                  ? JSON.stringify(error?.response?.data)
+                  : error?.response?.statusText,
+              },
+            });
+            return rep
+              .code(error["info"]["statusCode"])
+              .send(
+                new RestError(
+                  error.info,
+                  error["info"]["errorMessage"],
+                  "System(Axios)"
+                )
+              );
+          }
+          /** JWT expired error instance */
+          if (error instanceof TokenExpiredError) {
+            Object.assign(error, {
+              info: {
+                statusCode: ErrorsTypes.BadRequest.statusCode,
+                errorMessage:
+                  "Json Web Token expired" ||
+                  ErrorsTypes.BadRequest.errorMessage,
+              },
+            });
+            return rep
+              .code(error["info"]["statusCode"])
+              .send(
+                new RestError(
+                  error.info,
+                  error["info"]["errorMessage"],
+                  "System(JWT)"
+                )
+              );
+          }
+          /** JWT malformed error instance */
+          if (error instanceof JsonWebTokenError) {
+            Object.assign(error, {
+              info: {
+                statusCode: ErrorsTypes.BadRequest.statusCode,
+                errorMessage:
+                  "Json Web Token malformed" ||
+                  ErrorsTypes.BadRequest.errorMessage,
+              },
+            });
+            return rep
+              .code(error["info"]["statusCode"])
+              .send(
+                new RestError(
+                  error.info,
+                  error["info"]["errorMessage"],
+                  "System(JWT)"
+                )
+              );
+          }
+          /** Default error instance */
+          Object.assign(error, { info: ErrorsTypes.ServerError });
+        }
+        return rep
+          .code(error.info.statusCode)
+          .send(new RestError(error.info, error.message, error.module));
+      }
+    );
   }
 
   public registerControllers(controllers: any[]) {

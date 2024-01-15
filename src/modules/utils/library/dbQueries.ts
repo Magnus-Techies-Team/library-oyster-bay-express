@@ -13,3 +13,15 @@ VALUES
     (${userId}, ${organizationId}, ${AccessLevel.USER})
     `;
 };
+
+export const setUserRoleToOrganizationOwnerQuery = (
+  userId: number,
+  organizationId: number
+) => {
+  return `
+  INSERT INTO ${Tables.rbac}
+    (${RBACColumns.user_id}, ${RBACColumns.library_id}, ${RBACColumns.role_id})
+    VALUES
+        (${userId}, ${organizationId}, ${AccessLevel.OWNER})
+  `;
+};

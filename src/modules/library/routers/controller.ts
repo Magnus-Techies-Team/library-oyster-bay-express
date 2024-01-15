@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Controller, GET, Inject, POST } from "fastify-decorators";
 import {
+  RouteGenericInterfaceAddUserToLibrary,
   RouteGenericInterfaceCreateLibrary,
   RouteGenericInterfaceGetLibrary,
 } from "../types/reqInterface";
@@ -20,7 +21,10 @@ export class LibraryController {
     req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.createLibrary(req.body, Number(req.cookies.id));
+    const library = await this._libraryManagerService.createLibrary({
+      ...req.body,
+      owner_id: Number(req.cookies.id),
+    });
     return rep.status(200).send(library);
   }
 
@@ -29,16 +33,18 @@ export class LibraryController {
     req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.getLibrary(req.query.id);
+    const library = await this._libraryManagerService.getLibrary(
+      req.query.organizationId
+    );
     return rep.status(200).send(library);
   }
 
   @POST("/users/add", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async addUserToLibrary(
-    req: FastifyRequest<RouteGenericInterfaceCreateLibrary>,
+    req: FastifyRequest<RouteGenericInterfaceAddUserToLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.createLibrary(req.body, req.body.owner_id);
+    const library = await this._libraryManagerService.addUser(req.body.user_id);
     return rep.status(200).send(library);
   }
 }

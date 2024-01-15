@@ -9,7 +9,10 @@ import { RBACEnforce } from "../RBAC/hooks/rbacEnforcementHook";
 import { AccessLevel } from "../../../db/types/customTypes";
 import UserManager, { userManagerToken } from "../users/userManager";
 import asyncStorage from "../RBAC/asyncStorage";
-import { addUserToOrganizationQuery } from "./dbQueries";
+import {
+  addUserToOrganizationQuery,
+  setUserRoleToOrganizationOwnerQuery,
+} from "./dbQueries";
 import { DB, DBToken } from "../../../db";
 import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
 
@@ -29,20 +32,27 @@ export default class LibraryManager {
   public async createLibrary(libraryData: {
     name: string;
     description: string;
-  }, owner_id: number): Promise<LibrariesSchema> {
-    const canCreateLibrary = await this.canCreateLibrary(owner_id);
+    owner_id: number;
+  }): Promise<LibrariesSchema> {
+    const canCreateLibrary = await this.canCreateLibrary(libraryData.owner_id);
     if (!canCreateLibrary) {
       throw new BadRequestError(
         "Your subscription does not allow you to create more libraries",
         "LibraryManager"
       );
     }
-    libraryData['owner_id'] = owner_id;
     const library = await this._serviceClass.createRecord({
       tableName: Tables.libraries,
       columnObject: libraryData,
     });
+    await this._DB.executeQuery<RBACSchema>(
+      setUserRoleToOrganizationOwnerQuery(
+        libraryData.owner_id,
+        library.rows[0].id
+      )
+    );
     this.createLibraryFolder(library.rows[0].id);
+    this.createAuthorFolder(libraryData.owner_id, library.rows[0].id);
     return library.rows[0];
   }
 
@@ -84,6 +94,14 @@ export default class LibraryManager {
       );
     }
     await this.addUserToOrganization(userId);
+  }
+
+  public createAuthorFolder(authorId: number, libraryId: number): void {
+    const baseDir = `./publications/${libraryId}/authors/${authorId}`;
+
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
+    }
   }
 
   @RBACEnforce(AccessLevel.MODERATOR)

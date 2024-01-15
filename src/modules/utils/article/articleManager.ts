@@ -12,16 +12,19 @@ import { AccessLevel } from "../../../db/types/customTypes";
 import { DB, DBToken } from "../../../db";
 import {
   getAllOrganizationsPublicationsQuery,
-  getOrganizationsHiddenPublicationsQuery,
   getOrganizationHiddenPublicationsByUserIdQuery,
   getOrganizationPublicationByIdAndOrganizationQuery,
   getOrganizationPublicationsQuery,
+  getOrganizationsHiddenPublicationsQuery,
   getUserPublications,
   setPublicationApprovalByIdAndOrganizationQuery,
   setPublicationVisibilityByIdAndOrganizationQuery,
 } from "./dbQueries";
 import AsyncStorageMap from "../RBAC/asyncStorage";
 import { QueryResult } from "pg";
+import fs from "node:fs";
+import util from "node:util";
+import { pipeline } from "node:stream";
 
 export const articleManagerToken = Symbol("articleManagerToken");
 
@@ -36,17 +39,22 @@ export default class ArticleManager {
   private _DB!: DB;
 
   @RBACEnforce(AccessLevel.USER)
-  public async createPublication(
-    articleData: any,
-    content: any
-  ): Promise<PublicationsSchema> {
-    const filepath = `./publications/${articleData.library_id}/${articleData.title}`;
-    articleData["filepath"] = filepath;
+  public async createPublication(data: any): Promise<PublicationsSchema> {
+    const pump = util.promisify(pipeline);
+    const { articleData } = this.handleMultipart(data.multipart);
+    console.log(articleData);
+    articleData[
+      "filepath"
+    ] = `./publications/${data.library_id}/authors/${data.user_id}/${data.multipart.filename}`;
     const article = await this._serviceClass.createRecord({
       tableName: Tables.publications,
       columnObject: articleData,
     });
-    await this._articleStorageManager.uploadArticle(filepath, content);
+    await pump(
+      data.multipart.file,
+      fs.createWriteStream(data.multipart.filename)
+    );
+    // await this._articleStorageManager.uploadArticle(filepath, content);
     return article.rows[0];
   }
 
@@ -204,4 +212,14 @@ export default class ArticleManager {
     );
     return articles.rows;
   }
+
+  // private handleMultipart(multipart: any) {
+  //   // const fields = multipart.fields;
+  //   // const articleData = {};
+  //   // for (const field in fields) {
+  //   //   articleData[field] = fields[field];
+  //   // }
+  //   // return { articleData, content };
+  //   return { articleData: {} };
+  // }
 }

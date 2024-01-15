@@ -8,9 +8,9 @@ import { ReplyGenericInterface } from "fastify/types/reply";
 
 interface RequestGenericInterfaceCreateLibrary {
   Body: {
-    name: string,
-    description: string,
-    owner_id?: number
+    name: string;
+    description: string;
+    owner_id?: number;
   };
   Querystring?: RequestQuerystringDefault;
   Params: RequestParamsDefault;
@@ -19,8 +19,19 @@ interface RequestGenericInterfaceCreateLibrary {
 
 interface RequestGenericInterfaceGetLibrary {
   Body: RequestBodyDefault;
-  Querystring?: {
-    id: number
+  Querystring: {
+    organizationId: number;
+  };
+  Params: RequestParamsDefault;
+  Headers?: RequestHeadersDefault;
+}
+
+interface RequestGenericInterfaceAddUserToLibrary {
+  Body: {
+    user_id: number;
+  };
+  Querystring: {
+    organizationId: number;
   };
   Params: RequestParamsDefault;
   Headers?: RequestHeadersDefault;
@@ -33,4 +44,7 @@ export interface RouteGenericInterfaceCreateLibrary
 export interface RouteGenericInterfaceGetLibrary
   extends RequestGenericInterfaceGetLibrary,
     ReplyGenericInterface {}
-  
+
+export interface RouteGenericInterfaceAddUserToLibrary
+  extends RequestGenericInterfaceAddUserToLibrary,
+    ReplyGenericInterface {}
