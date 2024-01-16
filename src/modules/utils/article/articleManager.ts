@@ -21,7 +21,6 @@ import {
   setPublicationVisibilityByIdAndOrganizationQuery,
 } from "./dbQueries";
 import AsyncStorageMap from "../RBAC/asyncStorage";
-import { QueryResult } from "pg";
 import fs from "node:fs";
 import util from "node:util";
 import { pipeline } from "node:stream";
@@ -197,21 +196,21 @@ export default class ArticleManager {
   public async getOrganizationPublications() {
     const organizationId = AsyncStorageMap.get("organizationId");
     const userId = AsyncStorageMap.get("userId");
-    let publications: QueryResult<PublicationsSchema>,
-      hiddenPublications: QueryResult<PublicationsSchema>;
-    publications = await this._DB.executeQuery<PublicationsSchema>(
-      getOrganizationPublicationsQuery(organizationId)
-    );
+    let publications: PublicationsSchema[];
     try {
-      hiddenPublications = await this._DB.executeQuery<PublicationsSchema>(
-        getOrganizationsHiddenPublicationsQuery(userId)
-      );
+      publications = await this.getAllOrganizationPublications();
     } catch (error) {
-      hiddenPublications = await this._DB.executeQuery<PublicationsSchema>(
-        getOrganizationHiddenPublicationsByUserIdQuery(userId)
-      );
+      const publicPublications =
+        await this._DB.executeQuery<PublicationsSchema>(
+          getOrganizationPublicationsQuery(organizationId)
+        );
+      const hiddenPublications =
+        await this._DB.executeQuery<PublicationsSchema>(
+          getOrganizationHiddenPublicationsByUserIdQuery(userId)
+        );
+      publications = [...publicPublications.rows, ...hiddenPublications.rows];
     }
-    return [...publications.rows, ...hiddenPublications.rows];
+    return publications;
   }
 
   @RBACEnforce(AccessLevel.MODERATOR)

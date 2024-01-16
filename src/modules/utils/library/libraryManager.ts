@@ -52,7 +52,10 @@ export default class LibraryManager {
       )
     );
     this.createLibraryFolder(library.rows[0].id);
-    this.createAuthorFolder(libraryData.owner_id, library.rows[0].id);
+    this.createAuthorFolderInOrganization(
+      libraryData.owner_id,
+      library.rows[0].id
+    );
     return library.rows[0];
   }
 
@@ -94,12 +97,15 @@ export default class LibraryManager {
       );
     }
     const result = await this.addUserToOrganization(userId);
-    this.createAuthorFolder(userId, organizationId);
+    this.createAuthorFolderInOrganization(userId, organizationId);
     return result;
   }
 
-  private createAuthorFolder(authorId: number, libraryId: number): void {
-    const baseDir = `./publications/${libraryId}/authors/${authorId}`;
+  private createAuthorFolderInOrganization(
+    authorId: number,
+    libraryId: number
+  ): void {
+    const baseDir = `./publications/'organizations'/${libraryId}/authors/${authorId}`;
 
     if (!fs.existsSync(baseDir)) {
       fs.mkdirSync(baseDir, { recursive: true });
@@ -116,7 +122,7 @@ export default class LibraryManager {
   }
 
   private createLibraryFolder(libraryId: number): void {
-    const baseDir = `./publications/${libraryId}`;
+    const baseDir = `./publications/organizations/${libraryId}`;
     const commonDir = `${baseDir}/common`;
     const authorsDir = `${baseDir}/authors`;
 

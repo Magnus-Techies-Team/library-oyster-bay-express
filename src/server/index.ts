@@ -254,6 +254,17 @@ export default class Server {
     await this.serverInstance.listen({ port, host });
   }
 
+  public createBasicFolders() {
+    const organizationsDir = `./publications/organizations`;
+    const authorsDir = `./publications/authors`;
+    if (!fs.existsSync(organizationsDir)) {
+      fs.mkdirSync(organizationsDir, { recursive: true });
+    }
+    if (!fs.existsSync(authorsDir)) {
+      fs.mkdirSync(authorsDir, { recursive: true });
+    }
+  }
+
   public async initLocalDatabase() {
     await initLocalDatabaseIfNotExists();
   }
