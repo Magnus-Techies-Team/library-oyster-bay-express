@@ -11,10 +11,13 @@ import UserManager, { userManagerToken } from "../users/userManager";
 import asyncStorage from "../RBAC/asyncStorage";
 import {
   addUserToOrganizationQuery,
+  getUserOrganizationsQuery,
+  getUsersInLibraryListQuery,
   setUserRoleToOrganizationOwnerQuery,
 } from "./dbQueries";
 import { DB, DBToken } from "../../../db";
 import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
+import { UsersSchema } from "../../../db/types/tableSchemas/usersSchema";
 
 export const libraryManagerToken = Symbol("libraryManagerToken");
 
@@ -73,6 +76,20 @@ export default class LibraryManager {
       );
     }
     return library.rows[0];
+  }
+
+  public async getUserLibraryList(): Promise<number[]> {
+    const libraries = await this._DB.executeQuery<{ library_id: number }>(
+      getUserOrganizationsQuery(asyncStorage.get("userId"))
+    );
+    return libraries.rows.map((library) => library.library_id);
+  }
+
+  public async getUsersInLibraryList(): Promise<UsersSchema[]> {
+    const users = await this._DB.executeQuery<UsersSchema>(
+      getUsersInLibraryListQuery(asyncStorage.get("organizationId"))
+    );
+    return users.rows;
   }
 
   @RBACEnforce(AccessLevel.MODERATOR)

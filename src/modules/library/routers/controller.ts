@@ -11,7 +11,7 @@ import LibraryManager, {
 } from "../../utils/library/libraryManager";
 import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
 
-@Controller("/library")
+@Controller("/libraries")
 export class LibraryController {
   @Inject(libraryManagerToken)
   private _libraryManagerService!: LibraryManager;
@@ -37,6 +37,24 @@ export class LibraryController {
       req.query.organizationId
     );
     return rep.status(200).send(library);
+  }
+
+  @GET("/list", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  public async getUserLibraryList(
+    req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
+    rep: FastifyReply
+  ): Promise<FastifyReply> {
+    const libraries = await this._libraryManagerService.getUserLibraryList();
+    return rep.status(200).send(libraries);
+  }
+
+  @GET("/users/list", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  public async getUsersInLibraryList(
+    req: FastifyRequest<RouteGenericInterfaceGetLibrary>,
+    rep: FastifyReply
+  ): Promise<FastifyReply> {
+    const users = await this._libraryManagerService.getUsersInLibraryList();
+    return rep.status(200).send(users);
   }
 
   @POST("/users/add", { preHandler: [verifyJWTHook, authorizeUserHook] })

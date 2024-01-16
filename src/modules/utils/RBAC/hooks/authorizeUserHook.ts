@@ -15,8 +15,8 @@ export const authorizeUserHook = (
   resolvePromise(async (): Promise<AuthorizationHookResponse | undefined> => {
     logger.info(req.routerPath, "Authorization User Hook Router Path");
     try {
-      const organizationId = Number(req.query.organizationId) || 1;
-      const userId = Number(req.cookies["id"]) || 1;
+      const organizationId = Number(req.query.organizationId);
+      const userId = Number(req.cookies["id"]);
       if (!userId)
         throw new ForbiddenError(
           "User id is not provided",
