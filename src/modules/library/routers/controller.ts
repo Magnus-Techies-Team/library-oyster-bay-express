@@ -44,7 +44,9 @@ export class LibraryController {
     req: FastifyRequest<RouteGenericInterfaceAddUserToLibrary>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const library = await this._libraryManagerService.addUser(req.body.user_id);
+    const library = await this._libraryManagerService.addUserToLibrary(
+      req.body.user_id
+    );
     return rep.status(200).send(library);
   }
 }

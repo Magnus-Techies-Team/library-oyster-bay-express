@@ -1,6 +1,7 @@
 export type PublicationsSchema = {
   id: number;
   title: string;
+  description: string;
   user_id: string;
   is_public: boolean;
   is_approved: boolean;

@@ -9,10 +9,13 @@ import { Tables } from "../../../db/types/tables";
 import {
   getUserOrganizationsQuery,
   getUserSubscriptionQuery,
+  setBasicRoleQuery,
+  setBasicSubscriptionQuery,
 } from "./dbQueries";
 import { LibrariesSchema } from "../../../db/types/tableSchemas/librariesSchema";
 import { SubscriptionsSchema } from "../../../db/types/tableSchemas/subscriptionsSchema";
 import { SubscriptionsUsersSchema } from "../../../db/types/tableSchemas/subscriptionsUsersSchema";
+import { RBACSchema } from "../../../db/types/tableSchemas/RBACSchema";
 
 export const userManagerToken = Symbol("userManagerToken");
 
@@ -36,6 +39,8 @@ export default class UserManager {
         columnObject: userData,
       });
       delete userCreated.rows[0].password;
+      await this.setBasicSubscription(userCreated.rows[0].id);
+      await this.setBasicRole(userCreated.rows[0].id);
       return userCreated.rows[0];
     }
     throw new BadRequestError("Invalid email", "UserManager");
@@ -85,8 +90,18 @@ export default class UserManager {
     const result = await this._DB.executeQuery<LibrariesSchema>(query, []);
     return result.rows;
   }
-  //
-  // public async setBasicRole(userId: number): Promise<void> {
-  //
-  // }
+
+  public async setBasicRole(userId: number): Promise<RBACSchema[]> {
+    const query = setBasicRoleQuery(userId);
+    const result = await this._DB.executeQuery<RBACSchema>(query, []);
+    return result.rows;
+  }
+
+  public async setBasicSubscription(
+    userId: number
+  ): Promise<SubscriptionsSchema[]> {
+    const query = setBasicSubscriptionQuery(userId);
+    const result = await this._DB.executeQuery<SubscriptionsSchema>(query, []);
+    return result.rows;
+  }
 }

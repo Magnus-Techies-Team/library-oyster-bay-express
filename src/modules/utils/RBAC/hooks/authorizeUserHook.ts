@@ -16,11 +16,6 @@ export const authorizeUserHook = (
     logger.info(req.routerPath, "Authorization User Hook Router Path");
     try {
       const organizationId = Number(req.query.organizationId);
-      if (!organizationId)
-        throw new ForbiddenError(
-          "Organization id is not provided",
-          "authorizeUserHook"
-        );
       const userId = Number(req.cookies["id"]);
       if (!userId)
         throw new ForbiddenError(
@@ -44,6 +39,7 @@ export const authorizeUserHook = (
     }
   }).then((value) => {
     if (value) {
+      if (!value.organizationId) value.organizationId = 0;
       // instead of null there will be an auth function to get permission based on user x-id
       AsyncStorageMap.initStorage(
         () => {

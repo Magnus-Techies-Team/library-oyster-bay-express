@@ -24,21 +24,9 @@ export class ArticleController {
     req: FastifyRequest<RouteGenericInterfaceCreatePublication>,
     rep: FastifyReply
   ): Promise<FastifyReply> {
-    const multipartFile = await req.file();
-    const fields = multipartFile.fields;
-    console.log(multipartFile);
-    console.log("lol");
-    for (const [key, value] of Object.entries(fields)) {
-      if (!Array.isArray(value)) console.log(`${key}: ${(<any>value).value}`);
-    }
-    console.log("kek");
-    return rep.status(200).send(multipartFile);
-    for (const [key, value] of Object.entries(multipartFile)) {
-      console.log(`${key}: ${value}`);
-    }
-
+    const parts = await req.parts();
     const publication = await this._articleManagerService.createPublication({
-      multipart: multipartFile,
+      parts,
       user_id: AsyncStorage.get("userId"),
       library_id: AsyncStorage.get("organizationId"),
     });

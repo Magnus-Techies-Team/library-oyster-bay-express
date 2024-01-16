@@ -1,4 +1,4 @@
-import { bootstrap } from "fastify-decorators";
+import { bootstrap, getInstanceByToken } from "fastify-decorators";
 import { IncomingMessage, Server as httpServer, ServerResponse } from "http";
 import { plugin, pluginSet, router, routerSet } from "./types";
 import {
@@ -16,6 +16,12 @@ import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { RestError } from "./utils/common/errors/restError";
 import { AxiosError } from "axios";
 import { ErrorsTypes } from "./utils/common/errors/errorTypes";
+import { DB, DBToken } from "../db";
+import autofillUsersQuery from "../db/autofill/users";
+import autofillSubscriptionsQuery from "../db/autofill/subscriptions";
+import autofillRolesQuery from "../db/autofill/roles";
+import autofillLibrariesQuery from "../db/autofill/libraries";
+import autofillRBACQuery from "../db/autofill/rbac";
 
 export default class Server {
   private setOfRouters: routerSet;
@@ -250,5 +256,14 @@ export default class Server {
 
   public async initLocalDatabase() {
     await initLocalDatabaseIfNotExists();
+  }
+
+  public async autofillDatabase() {
+    const DB = getInstanceByToken<DB>(DBToken);
+    await DB.executeQuery(autofillUsersQuery);
+    await DB.executeQuery(autofillSubscriptionsQuery);
+    await DB.executeQuery(autofillRolesQuery);
+    await DB.executeQuery(autofillLibrariesQuery);
+    await DB.executeQuery(autofillRBACQuery);
   }
 }

@@ -13,6 +13,7 @@ import fastifyMultipart from "@fastify/multipart";
 import { LibraryController } from "./modules/library/routers/controller";
 import { UserController } from "./modules/users/routers/controller";
 import { ArticleController } from "./modules/article/routers/controller";
+import fastifyMultipartOptions from "./server/options/fastifyMultipartOptions";
 
 const server = new Server(
   fastify({
@@ -37,7 +38,7 @@ server.registerPlugin({
 });
 server.registerPlugin({
   pluginInstance: fastifyMultipart,
-  options: {},
+  options: fastifyMultipartOptions,
 });
 server.registerPlugins();
 server.registerControllers([

@@ -25,6 +25,8 @@ import { QueryResult } from "pg";
 import fs from "node:fs";
 import util from "node:util";
 import { pipeline } from "node:stream";
+import { Multipart } from "@fastify/multipart";
+import path from "path";
 
 export const articleManagerToken = Symbol("articleManagerToken");
 
@@ -39,22 +41,39 @@ export default class ArticleManager {
   private _DB!: DB;
 
   @RBACEnforce(AccessLevel.USER)
-  public async createPublication(data: any): Promise<PublicationsSchema> {
+  public async createPublication(data: {
+    parts: AsyncIterableIterator<Multipart>;
+    user_id: number;
+    library_id: number;
+  }): Promise<PublicationsSchema> {
     const pump = util.promisify(pipeline);
-    const { articleData } = this.handleMultipart(data.multipart);
+    const articleData = {};
+    Object.assign(articleData, {
+      user_id: data.user_id,
+      library_id: data.library_id,
+    });
+    for await (const part of data.parts) {
+      if (part.type !== "file") {
+        Object.assign(articleData, { [part.fieldname]: part.value });
+      }
+      if (part.type === "file") {
+        const filepath = this.generateFilePath({
+          user_id: data.user_id,
+          library_id: data.library_id,
+          filename: part.filename,
+        });
+        const directory = path.dirname(filepath);
+        await fs.promises.mkdir(directory, { recursive: true });
+        Object.assign(articleData, { filepath });
+        await pump(part.file, fs.createWriteStream(filepath));
+      }
+    }
+    Object.assign(articleData, { is_public: false, is_approved: false });
     console.log(articleData);
-    articleData[
-      "filepath"
-    ] = `./publications/${data.library_id}/authors/${data.user_id}/${data.multipart.filename}`;
     const article = await this._serviceClass.createRecord({
       tableName: Tables.publications,
       columnObject: articleData,
     });
-    await pump(
-      data.multipart.file,
-      fs.createWriteStream(data.multipart.filename)
-    );
-    // await this._articleStorageManager.uploadArticle(filepath, content);
     return article.rows[0];
   }
 
@@ -213,13 +232,11 @@ export default class ArticleManager {
     return articles.rows;
   }
 
-  // private handleMultipart(multipart: any) {
-  //   // const fields = multipart.fields;
-  //   // const articleData = {};
-  //   // for (const field in fields) {
-  //   //   articleData[field] = fields[field];
-  //   // }
-  //   // return { articleData, content };
-  //   return { articleData: {} };
-  // }
+  private generateFilePath(data: {
+    user_id: number;
+    library_id: number;
+    filename: string;
+  }) {
+    return `./publications/${data.library_id}/authors/${data.user_id}/${data.filename}`;
+  }
 }

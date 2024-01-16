@@ -17,6 +17,7 @@ interface RequestGenericInterfaceCreatePublication {
   };
   Params: RequestParamsDefault;
   Headers?: RequestHeadersDefault;
+  upload: () => any;
 }
 
 interface RequestGenericInterfaceGetOrganizationPublications {

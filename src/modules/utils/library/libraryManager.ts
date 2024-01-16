@@ -73,7 +73,7 @@ export default class LibraryManager {
   }
 
   @RBACEnforce(AccessLevel.MODERATOR)
-  public async addUser(userId: number): Promise<void> {
+  public async addUserToLibrary(userId: number): Promise<RBACSchema> {
     const organizationId = asyncStorage.get("organizationId");
     const library = await this._serviceClass.getRecord({
       tableName: Tables.libraries,
@@ -93,10 +93,12 @@ export default class LibraryManager {
         "LibraryManager"
       );
     }
-    await this.addUserToOrganization(userId);
+    const result = await this.addUserToOrganization(userId);
+    this.createAuthorFolder(userId, organizationId);
+    return result;
   }
 
-  public createAuthorFolder(authorId: number, libraryId: number): void {
+  private createAuthorFolder(authorId: number, libraryId: number): void {
     const baseDir = `./publications/${libraryId}/authors/${authorId}`;
 
     if (!fs.existsSync(baseDir)) {

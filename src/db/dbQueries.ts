@@ -21,6 +21,7 @@ export const createPublicationTagsQuery = `create table if not exists ${Tables.p
 export const createPublicationsQuery = `create table if not exists ${Tables.publications} (
     ${PublicationColumns.id} serial primary key,
     ${PublicationColumns.title} varchar(255) not null,
+    ${PublicationColumns.description} text,
     ${PublicationColumns.filepath} varchar(255) not null,
     ${PublicationColumns.user_id} integer not null,
     ${PublicationColumns.library_id} integer not null,
