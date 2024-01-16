@@ -27,11 +27,8 @@ interface ApplicationConfig {
   documentation: {
     prefix: string;
   };
-  specification?: {
-    cron: string;
-    generationNumber: number;
-  };
   logger: LoggerConfig;
+  platformDirPath: string;
   security: securityConfig;
   services: {
     article: string;

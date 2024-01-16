@@ -34,7 +34,7 @@ export const getUserPublications = (userId: number, organizationId: number) => {
 
 export const getOrganizationPublicationsQuery = (organizationId: number) => {
   return `
-    select * from ${Tables.publications} where ${PublicationColumns.library_id} = ${organizationId} and ${PublicationColumns.is_public} = true`;
+    select * from ${Tables.publications} where ${PublicationColumns.library_id} = ${organizationId} and ${PublicationColumns.is_public} = true and ${PublicationColumns.is_approved} = true`;
 };
 
 export const getOrganizationHiddenPublicationsByUserIdQuery = (

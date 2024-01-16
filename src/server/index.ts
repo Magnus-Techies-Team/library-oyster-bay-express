@@ -22,6 +22,7 @@ import autofillSubscriptionsQuery from "../db/autofill/subscriptions";
 import autofillRolesQuery from "../db/autofill/roles";
 import autofillLibrariesQuery from "../db/autofill/libraries";
 import autofillRBACQuery from "../db/autofill/rbac";
+import _CONFIG from "../config";
 
 export default class Server {
   private setOfRouters: routerSet;
@@ -255,13 +256,9 @@ export default class Server {
   }
 
   public createBasicFolders() {
-    const organizationsDir = `./publications/organizations`;
-    const authorsDir = `./publications/authors`;
-    if (!fs.existsSync(organizationsDir)) {
-      fs.mkdirSync(organizationsDir, { recursive: true });
-    }
-    if (!fs.existsSync(authorsDir)) {
-      fs.mkdirSync(authorsDir, { recursive: true });
+    const platformDir = _CONFIG.app.platformDirPath;
+    if (!fs.existsSync(platformDir)) {
+      fs.mkdirSync(platformDir, { recursive: true });
     }
   }
 
