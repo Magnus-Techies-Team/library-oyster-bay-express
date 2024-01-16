@@ -31,7 +31,7 @@ export function RBACEnforce(accessLevel: AccessLevel) {
       );
       if (userRbacInfo.rowCount === 0)
         throw new ForbiddenError(
-          `${userId} does not have access to organization ${organizationId}`,
+          `User ${userId} does not have access to organization ${organizationId}`,
           "RBACEnforce"
         );
       if (

@@ -1,7 +1,7 @@
 /.idea
 /node_modules
 /dist
-
+/publications
 */config/env/*.*
 
 /src/config/secrets.env

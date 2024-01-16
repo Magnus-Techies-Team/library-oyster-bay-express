@@ -10,7 +10,6 @@ import { verifyJWTHook } from "../../utils/users/verifyJWTHook";
 import ArticleManager, {
   articleManagerToken,
 } from "../../utils/article/articleManager";
-import { _CONTENT_TYPE } from "../../utils/article/formatContentTypes";
 import { authorizeUserHook } from "../../utils/RBAC/hooks/authorizeUserHook";
 import AsyncStorage from "../../utils/RBAC/asyncStorage";
 
@@ -44,7 +43,7 @@ export class ArticleController {
     return rep.status(200).send(publication);
   }
 
-  @POST("/approve", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  @POST("/updateApproval", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async approvePublication(
     req: FastifyRequest<RouteGenericInterfaceChangePublicationState>,
     rep: FastifyReply
@@ -66,7 +65,7 @@ export class ArticleController {
     return rep.status(200).send(publication);
   }
 
-  @GET("/library", { preHandler: [verifyJWTHook, authorizeUserHook] })
+  @GET("/", { preHandler: [verifyJWTHook, authorizeUserHook] })
   public async getAllArticles(
     req: FastifyRequest<RouteGenericInterfaceGetOrganizationPublications>,
     rep: FastifyReply
@@ -76,15 +75,14 @@ export class ArticleController {
     return rep.status(200).send(publications);
   }
 
-  @GET("/download/:id", { preValidation: [verifyJWTHook, authorizeUserHook] })
+  @GET("/download/:id", { preValidation: [authorizeUserHook] })
   public async downloadArticle(
     req: FastifyRequest<RouteGenericInterfaceGetPublicationContent>,
     rep: FastifyReply
   ) {
-    const fileContent = await this._articleManagerService.getArticleContent(
+    const filepath = await this._articleManagerService.getPublicationPath(
       req.params.id
     );
-    const contentType = _CONTENT_TYPE[fileContent.format];
-    rep.header("Content-Type", contentType).send(fileContent.content);
+    return rep.sendFile(filepath);
   }
 }

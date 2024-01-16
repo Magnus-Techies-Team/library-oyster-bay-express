@@ -6,7 +6,7 @@ export const getOrganizationPublicationByIdAndOrganizationQuery = (
   organizationId: number
 ) => {
   return `
-        select * from ${Tables.publications} where ${PublicationColumns.id} = id and ${PublicationColumns.library_id} = ${organizationId}`;
+        select * from ${Tables.publications} where ${PublicationColumns.id} = ${id} and ${PublicationColumns.library_id} = ${organizationId}`;
 };
 
 export const setPublicationVisibilityByIdAndOrganizationQuery = (

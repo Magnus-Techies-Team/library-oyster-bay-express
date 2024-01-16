@@ -1,6 +1,9 @@
 import { Inject, Service } from "fastify-decorators";
 import ServiceClass, { serviceClassToken } from "../common/serviceClass";
-import { BadRequestError } from "../../../server/utils/common/errors/error";
+import {
+  BadRequestError,
+  ForbiddenError,
+} from "../../../server/utils/common/errors/error";
 import { Tables } from "../../../db/types/tables";
 import {
   ArticleStorageManager,
@@ -61,10 +64,12 @@ export default class ArticleManager {
           library_id: data.library_id,
           filename: part.filename,
         });
-        const directory = path.dirname(filepath);
+        const streamFilepath = `./publications/${filepath}`;
+        const directory = path.dirname(streamFilepath);
+        console.log(directory);
         await fs.promises.mkdir(directory, { recursive: true });
         Object.assign(articleData, { filepath });
-        await pump(part.file, fs.createWriteStream(filepath));
+        await pump(part.file, fs.createWriteStream(streamFilepath));
       }
     }
     Object.assign(articleData, { is_public: false, is_approved: false });
@@ -146,6 +151,7 @@ export default class ArticleManager {
     return updatedPublication.rows[0];
   }
 
+  @RBACEnforce(AccessLevel.USER)
   public async getPublication(id: number) {
     const organizationId = AsyncStorageMap.get("organizationId");
     const article = await this._DB.executeQuery<PublicationsSchema>(
@@ -161,16 +167,23 @@ export default class ArticleManager {
   }
 
   @RBACEnforce(AccessLevel.USER)
-  public async getArticleContent(id: number) {
-    const article = await this.getPublication(id);
-    if (!article) {
+  public async getPublicationPath(id: number) {
+    const publication = await this.getPublication(id);
+    if (publication.is_public || publication.is_approved) {
+      if (publication.user_id !== AsyncStorageMap.get("userId")) {
+        throw new ForbiddenError(
+          `You have no access to this article ${id}`,
+          "ArticleManager"
+        );
+      }
+    }
+    if (!publication) {
       throw new BadRequestError(
-        `Article with id ${id} not found`,
+        `Publication with id ${id} not found`,
         "ArticleManager"
       );
     }
-    const filepath = article.filepath;
-    return this._articleStorageManager.getFileContent(filepath);
+    return publication.filepath;
   }
 
   @RBACEnforce(AccessLevel.USER)
@@ -236,6 +249,6 @@ export default class ArticleManager {
     library_id: number;
     filename: string;
   }) {
-    return `./publications/${data.library_id}/authors/${data.user_id}/${data.filename}`;
+    return `${data.library_id}/authors/${data.user_id}/${data.filename}`;
   }
 }

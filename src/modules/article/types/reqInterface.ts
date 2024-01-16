@@ -34,6 +34,7 @@ interface RequestGenericInterfaceGetOrganizationPublications {
 interface RequestGenericInterfaceChangePublicationState {
   Body: {
     id: number;
+    isPublic: boolean;
   };
   Querystring?: {
     organizationId: number;

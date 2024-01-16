@@ -14,6 +14,8 @@ import { LibraryController } from "./modules/library/routers/controller";
 import { UserController } from "./modules/users/routers/controller";
 import { ArticleController } from "./modules/article/routers/controller";
 import fastifyMultipartOptions from "./server/options/fastifyMultipartOptions";
+import fastifyStatic from "@fastify/static";
+import fastifyStaticOptions from "./server/options/fastifyStaticOptions";
 
 const server = new Server(
   fastify({
@@ -39,6 +41,10 @@ server.registerPlugin({
 server.registerPlugin({
   pluginInstance: fastifyMultipart,
   options: fastifyMultipartOptions,
+});
+server.registerPlugin({
+  pluginInstance: <any>fastifyStatic,
+  options: fastifyStaticOptions,
 });
 server.registerPlugins();
 server.registerControllers([
